@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+
+    <title>Student Registration</title>
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <style>
+        body {
+            margin: 0;
+            font-family: 'Segoe UI', sans-serif;
+
+            background:
+                linear-gradient(135deg, #4facfe, #8e44ad, #ff6a00);
+
+            background-size: 300% 300%;
+
+            animation: gradientMove 8s ease infinite;
+        }
+
+        @keyframes gradientMove {
+
+            0% {
+                background-position: 0%;
+            }
+
+            50% {
+                background-position: 100%;
+            }
+
+            100% {
+                background-position: 0%;
+            }
+
+        }
+
+        .container {
+            width: 400px;
+            margin: 40px auto;
+        }
+
+        .card {
+
+            background: white;
+
+            padding: 25px;
+
+            border-radius: 15px;
+
+            box-shadow: 0px 10px 30px rgba(0, 0, 0, 0.3);
+
+        }
+
+        h2 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .input-box {
+            margin-bottom: 12px;
+            position: relative;
+        }
+
+        .input-box label {
+
+            font-weight: bold;
+            font-size: 14px;
+
+        }
+
+        .input-box input {
+
+            width: 100%;
+
+            padding: 10px;
+
+            margin-top: 5px;
+
+            border-radius: 8px;
+
+            border: 1px solid #ccc;
+
+        }
+
+        .toggle {
+
+            position: absolute;
+
+            right: 10px;
+
+            top: 38px;
+
+            cursor: pointer;
+
+        }
+
+        button {
+
+            width: 100%;
+
+            padding: 12px;
+
+            background:
+                linear-gradient(135deg, #ff416c, #ff4b2b);
+
+            color: white;
+
+            border: none;
+
+            border-radius: 25px;
+
+            font-size: 16px;
+
+            cursor: pointer;
+
+        }
+
+        .upload-box {
+
+            display: inline-block;
+
+            padding: 10px 15px;
+
+            background: #6c63ff;
+
+            color: white;
+
+            border-radius: 8px;
+
+            cursor: pointer;
+
+        }
+
+        #preview {
+
+            margin-top: 10px;
+
+            object-fit: cover;
+
+            border: 2px solid #ddd;
+
+        }
+
+        .login-link {
+
+            text-align: center;
+
+            margin-top: 15px;
+
+        }
+
+        .login-link a {
+
+            color: #6c63ff;
+
+            text-decoration: none;
+
+            font-weight: bold;
+
+        }
+    </style>
+
+</head>
+
+<body>
+
+    <div class="container">
+
+        <div class="card">
+
+            <h2>📝 Student Registration</h2>
+
+            <form id="registerForm" action="register.php" method="POST" enctype="multipart/form-data">
+
+                <!-- Name -->
+
+                <div class="input-box">
+
+                    <label>Name</label>
+
+                    <input type="text" name="name" required oninput="this.value =
+this.value.replace(/\b\w/g,
+l=>l.toUpperCase())">
+
+                </div>
+
+                <!-- Class -->
+
+                <div class="input-box">
+
+                    <label>Class</label>
+
+                    <input type="text" name="class" required>
+
+                </div>
+
+                <!-- Department -->
+
+                <div class="input-box">
+
+                    <label>Department</label>
+
+                    <input type="text" name="department" required>
+
+                </div>
+
+                <!-- University Roll -->
+
+                <div class="input-box">
+
+                    <label>University Roll</label>
+
+                    <input type="text" name="university_roll" required>
+
+                </div>
+
+                <!-- Hostel Roll -->
+
+                <div class="input-box">
+
+                    <label>Hostel Roll</label>
+
+                    <input type="text" name="hostel_roll" required oninput="this.value=
+this.value.toUpperCase()">
+
+                </div>
+
+                <!-- Phone -->
+
+                <div class="input-box">
+
+                    <label>Phone</label>
+
+                    <input type="text" name="phone" id="phone" maxlength="10" required oninput="
+this.value=
+this.value.replace(/[^0-9]/g,'')">
+
+                </div>
+
+                <!-- Email -->
+
+                <div class="input-box">
+
+                    <label>Email</label>
+
+                    <input type="email" name="email" id="email" required>
+
+                </div>
+
+                <!-- Room -->
+
+                <div class="input-box">
+
+                    <label>Room Number</label>
+
+                    <input type="text" name="room_number" required>
+
+                </div>
+
+                <!-- Address -->
+
+                <div class="input-box">
+
+                    <label>Address</label>
+
+                    <input type="text" name="address" required>
+
+                </div>
+
+                <!-- Password -->
+
+                <div class="input-box">
+
+                    <label>Password</label>
+
+                    <input type="password" id="pass" name="password" required>
+
+                    <span class="toggle" onclick="togglePassword('pass')">
+
+                        👁️
+
+                    </span>
+
+                </div>
+
+                <!-- Confirm Password -->
+
+                <div class="input-box">
+
+                    <label>Confirm Password</label>
+
+                    <input type="password" id="cpass" name="confirm_password" required>
+
+                    <span class="toggle" onclick="togglePassword('cpass')">
+
+                        👁️
+
+                    </span>
+
+                </div>
+
+                <!-- Photo -->
+
+                <div class="input-box">
+
+                    <label>Upload Photo</label>
+
+                    <label class="upload-box">
+
+                        <input type="file" name="photo" id="photoInput" accept="image/*" required hidden>
+
+                        📷 Choose Photo
+
+                    </label>
+
+                    <br>
+
+                    <img id="preview" src="" style="
+width:100px;
+height:100px;
+border-radius:50%;
+display:none;">
+
+                </div>
+
+                <button type="submit" id="submitBtn">
+
+                    🚀 Register
+
+                </button>
+
+            </form>
+
+            <div class="login-link">
+
+                Already registered?
+
+                <a href="login.html">
+
+                    Login here
+
+                </a>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <script>
+
+        /* Toggle Password */
+
+        function togglePassword(id) {
+
+            let x =
+                document.getElementById(id);
+
+            x.type =
+                (x.type === "password")
+                    ? "text"
+                    : "password";
+
+        }
+
+
+        /* Image Preview */
+
+        document
+            .getElementById("photoInput")
+            .addEventListener("change",
+                function (e) {
+
+                    const file =
+                        e.target.files[0];
+
+                    if (file) {
+
+                        if (!file.type.startsWith("image/")) {
+
+                            alert("Only image allowed!");
+
+                            this.value = "";
+
+                            return;
+
+                        }
+
+                        if (file.size >
+                            2 * 1024 * 1024) {
+
+                            alert("Image must be less than 2MB");
+
+                            this.value = "";
+
+                            return;
+
+                        }
+
+                        const reader =
+                            new FileReader();
+
+                        reader.onload = function () {
+
+                            let img =
+                                document.getElementById("preview");
+
+                            img.src =
+                                reader.result;
+
+                            img.style.display = "block";
+
+                        };
+
+                        reader.readAsDataURL(file);
+
+                    }
+
+                });
+
+
+        /* Form Validation */
+
+        document
+            .getElementById("registerForm")
+
+            .addEventListener("submit",
+                function (e) {
+
+                    let pass =
+                        document.getElementById("pass").value.trim();
+
+                    let cpass =
+                        document.getElementById("cpass").value.trim();
+
+                    let phone =
+                        document.getElementById("phone").value.trim();
+
+                    let email =
+                        document.getElementById("email").value.trim();
+
+                    /* Password Match */
+
+                    if (pass !== cpass) {
+
+                        alert("❌ Passwords do not match!");
+
+                        e.preventDefault();
+
+                        return;
+
+                    }
+
+                    /* Password Strength */
+
+                    if (!/(?=.*[A-Za-z])(?=.*\d).{6,}/
+                        .test(pass)) {
+
+                        alert(
+                            "Password must contain letter and number (min 6 chars)"
+                        );
+
+                        e.preventDefault();
+
+                        return;
+
+                    }
+
+                    /* Phone */
+
+                    if (!/^[0-9]{10}$/.test(phone)) {
+
+                        alert("❌ Enter valid 10-digit phone!");
+
+                        e.preventDefault();
+
+                        return;
+
+                    }
+
+                    /* Email */
+
+                    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/
+                        .test(email)) {
+
+                        alert("❌ Invalid Email!");
+
+                        e.preventDefault();
+
+                        return;
+
+                    }
+
+                    /* Prevent Double Submit */
+
+                    document
+                        .getElementById("submitBtn")
+                        .disabled = true;
+
+                });
+
+    </script>
+
+</body>
+
+</html>
