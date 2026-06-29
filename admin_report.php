@@ -28,31 +28,20 @@ $stmt = $conn->prepare("
 
 SELECT
 
-COUNT(CASE WHEN breakfast=1 THEN 1 END)
-AS breakfast_count,
+COUNT(CASE WHEN breakfast=1 THEN 1 END) AS breakfast_count,
 
-COUNT(CASE WHEN lunch_type='veg' THEN 1 END)
-AS veg_lunch,
+COUNT(CASE WHEN lunch_type='veg' THEN 1 END) AS veg_lunch,
+COUNT(CASE WHEN lunch_type='nonveg' THEN 1 END) AS nonveg_lunch,
 
-COUNT(CASE WHEN lunch_type='nonveg' THEN 1 END)
-AS nonveg_lunch,
+COUNT(CASE WHEN dinner_type='veg' THEN 1 END) AS veg_dinner,
+COUNT(CASE WHEN dinner_type='nonveg' THEN 1 END) AS nonveg_dinner,
 
-COUNT(CASE WHEN dinner_type='veg' THEN 1 END)
-AS veg_dinner,
-
-COUNT(CASE WHEN dinner_type='nonveg' THEN 1 END)
-AS nonveg_dinner,
-
-COUNT(CASE WHEN base='roti' THEN 1 END)
-AS roti_count,
-
-COUNT(CASE WHEN base='rice' THEN 1 END)
-AS rice_count,
+COUNT(CASE WHEN base='rice' THEN 1 END) AS rice_count,
+COUNT(CASE WHEN base='roti' THEN 1 END) AS roti_count,
 
 COUNT(*) AS total_students
 
 FROM meals
-
 WHERE date=?
 
 ");
@@ -60,131 +49,15 @@ WHERE date=?
 $stmt->bind_param("s", $selected_date);
 $stmt->execute();
 
-$data =
-    $stmt->get_result()->fetch_assoc();
+$data = $stmt->get_result()->fetch_assoc();
 
 /* SAFETY */
-
 foreach ($data as $k => $v) {
-
     $data[$k] = $v ?? 0;
 }
 
-/* ============================
-COST CALCULATION
-SPECIAL SUPPORT
-============================ */
-
-$total_cost = 0;
-
-$stmt2 = $conn->prepare("
-
-SELECT
-
-meals.*,
-
-menu.is_special,
-
-menu.lunch_veg_price,
-menu.lunch_nonveg_price,
-
-menu.dinner_veg_price,
-menu.dinner_nonveg_price,
-
-menu.special_lunch_veg_price,
-menu.special_lunch_nonveg_price,
-
-menu.special_dinner_veg_price,
-menu.special_dinner_nonveg_price
-
-FROM meals
-
-LEFT JOIN menu
-
-ON (
-
-(menu.is_special=1
-AND meals.date=menu.special_date)
-
-OR
-
-(menu.is_special=0
-AND meals.day=menu.day)
-
-)
-
-WHERE meals.date=?
-
-");
-
-$stmt2->bind_param("s", $selected_date);
-$stmt2->execute();
-
-$res = $stmt2->get_result();
-
-while ($row = $res->fetch_assoc()) {
-
-    /* BREAKFAST */
-
-    if (!empty($row['breakfast'])) {
-
-        $total_cost += 15;
-    }
-
-    /* SPECIAL PRICE */
-
-    if ($row['is_special']) {
-
-        $lunch_veg_price =
-            $row['special_lunch_veg_price']
-            ?: $row['lunch_veg_price'];
-
-        $lunch_nonveg_price =
-            $row['special_lunch_nonveg_price']
-            ?: $row['lunch_nonveg_price'];
-
-        $dinner_veg_price =
-            $row['special_dinner_veg_price']
-            ?: $row['dinner_veg_price'];
-
-        $dinner_nonveg_price =
-            $row['special_dinner_nonveg_price']
-            ?: $row['dinner_nonveg_price'];
-    } else {
-
-        $lunch_veg_price =
-            $row['lunch_veg_price'];
-
-        $lunch_nonveg_price =
-            $row['lunch_nonveg_price'];
-
-        $dinner_veg_price =
-            $row['dinner_veg_price'];
-
-        $dinner_nonveg_price =
-            $row['dinner_nonveg_price'];
-    }
-
-    /* LUNCH */
-
-    if (!empty($row['lunch_type'])) {
-
-        $total_cost +=
-            ($row['lunch_type'] == 'veg')
-            ? $lunch_veg_price
-            : $lunch_nonveg_price;
-    }
-
-    /* DINNER */
-
-    if (!empty($row['dinner_type'])) {
-
-        $total_cost +=
-            ($row['dinner_type'] == 'veg')
-            ? $dinner_veg_price
-            : $dinner_nonveg_price;
-    }
-}
+/* CHECK NO DATA */
+$no_data = ($data['total_students'] == 0);
 
 ?>
 
@@ -193,109 +66,95 @@ while ($row = $res->fetch_assoc()) {
 
 <head>
 
-    <title>Meal Analytics</title>
+    <title>Daily Meal Report</title>
 
     <style>
         body {
+            font-family: 'Segoe UI';
+            background: #eef2f7;
+            margin: 0;
+        }
 
-            font-family: Arial;
-            background: #f4f6f9;
+        .header {
+            background: #007bff;
+            color: white;
+            padding: 15px;
             text-align: center;
-
+            font-size: 22px;
         }
-
-        .container {
-
-            width: 95%;
-            margin: auto;
-
-        }
-
-        /* HEADER */
 
         .top {
-
-            margin: 20px;
-
+            text-align: center;
+            padding: 15px;
+            background: white;
         }
 
-        /* DATE SELECT */
-
         input {
-
             padding: 8px;
             font-size: 15px;
-
         }
 
         button {
-
             padding: 8px 14px;
-
             background: #007bff;
-
             color: white;
-
             border: none;
-
             border-radius: 6px;
-
             cursor: pointer;
-
         }
 
-        /* CARDS */
+        .container {
+            width: 95%;
+            margin: 20px auto;
+        }
+
+        .section-title {
+            text-align: left;
+            margin: 10px 0;
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 15px;
+        }
 
         .card {
-
-            display: inline-block;
-
-            width: 200px;
-
-            margin: 10px;
-
-            padding: 18px;
-
             background: white;
-
-            border-radius: 12px;
-
-            box-shadow: 0 5px 15px rgba(0, 0, 0, .1);
-
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 4px 10px rgba(0,0,0,.1);
         }
 
-        .card h3 {
-
-            margin: 5px;
-
+        .card h2 {
+            margin: 5px 0;
+            color: #007bff;
         }
 
-        /* COST CARD */
-
-        .cost {
-
+        .highlight {
             background: #d4edda;
-
         }
 
-        /* BACK */
+        .warning {
+            text-align: center;
+            color: red;
+            margin-top: 20px;
+            font-weight: bold;
+        }
 
         .back {
-
-            display: inline-block;
-
-            margin: 25px;
-
-            padding: 10px 16px;
-
+            display: block;
+            width: 220px;
+            margin: 30px auto;
+            text-align: center;
+            padding: 10px;
             background: #333;
-
             color: white;
-
-            text-decoration: none;
-
             border-radius: 8px;
-
+            text-decoration: none;
         }
     </style>
 
@@ -303,109 +162,92 @@ while ($row = $res->fetch_assoc()) {
 
 <body>
 
-    <h2>
+<div class="header">
+    📊 Daily Meal Report — <?php echo date("d M Y", strtotime($selected_date)); ?> (<?php echo $day_name; ?>)
+</div>
 
-        📊 Meal Analytics —
-        <?php echo date("d M Y", strtotime($selected_date)); ?>
+<div class="top">
+    <form method="GET">
+        <input type="date" name="date" value="<?php echo $selected_date; ?>">
+        <button>🔍 Load Report</button>
+    </form>
+</div>
 
-    </h2>
+<div class="container">
 
-    <div class="top">
+<?php if ($no_data) { ?>
 
-        <form method="GET">
+    <p class="warning">⚠ No meal data found for this date</p>
 
-            <input
-                type="date"
-                name="date"
-                value="<?php echo $selected_date; ?>">
+<?php } else { ?>
 
-            <button>
-
-                🔍 Load
-
-            </button>
-
-        </form>
-
+    <!-- BREAKFAST -->
+    <div class="section-title">🍽 Breakfast</div>
+    <div class="grid">
+        <div class="card highlight">
+            Total Breakfast
+            <h2><?php echo $data['breakfast_count']; ?></h2>
+        </div>
     </div>
 
-    <div class="container">
-
+    <!-- LUNCH -->
+    <div class="section-title">🍛 Lunch</div>
+    <div class="grid">
         <div class="card">
-
-            🍽 Breakfast
-            <h3><?php echo $data['breakfast_count']; ?></h3>
-
-        </div>
-
-        <div class="card">
-
-            🥗 Veg Lunch
-            <h3><?php echo $data['veg_lunch']; ?></h3>
-
+            Veg Meals
+            <h2><?php echo $data['veg_lunch']; ?></h2>
         </div>
 
         <div class="card">
-
-            🍗 NonVeg Lunch
-            <h3><?php echo $data['nonveg_lunch']; ?></h3>
-
+            Non-Veg Meals
+            <h2><?php echo $data['nonveg_lunch']; ?></h2>
         </div>
-
-        <div class="card">
-
-            🌙 Veg Dinner
-            <h3><?php echo $data['veg_dinner']; ?></h3>
-
-        </div>
-
-        <div class="card">
-
-            🍗 NonVeg Dinner
-            <h3><?php echo $data['nonveg_dinner']; ?></h3>
-
-        </div>
-
-        <div class="card">
-
-            🍚 Rice
-            <h3><?php echo $data['rice_count']; ?></h3>
-
-        </div>
-
-        <div class="card">
-
-            🍞 Roti
-            <h3><?php echo $data['roti_count']; ?></h3>
-
-        </div>
-
-        <div class="card">
-
-            👨‍🎓 Total Students
-            <h3><?php echo $data['total_students']; ?></h3>
-
-        </div>
-
-        <div class="card cost">
-
-            💰 Estimated Cost
-
-            <h2>
-                ₹ <?php echo $total_cost; ?>
-            </h2>
-
-        </div>
-
     </div>
 
-    <a
-        href="admin_dashboard.php"
-        class="back">
+    <!-- DINNER -->
+    <div class="section-title">🌙 Dinner</div>
+    <div class="grid">
+        <div class="card">
+            Veg Meals
+            <h2><?php echo $data['veg_dinner']; ?></h2>
+        </div>
 
-        ⬅ Back Dashboard
+        <div class="card">
+            Non-Veg Meals
+            <h2><?php echo $data['nonveg_dinner']; ?></h2>
+        </div>
+    </div>
 
-    </a>
+    <!-- BASE -->
+    <div class="section-title">🍚 Food Base Requirement</div>
+    <div class="grid">
+        <div class="card">
+            Rice Required
+            <h2><?php echo $data['rice_count']; ?></h2>
+        </div>
+
+        <div class="card">
+            Roti Required
+            <h2><?php echo $data['roti_count']; ?></h2>
+        </div>
+    </div>
+
+    <!-- SUMMARY -->
+    <div class="section-title">📊 Overall Summary</div>
+    <div class="grid">
+        <div class="card highlight">
+            Total Students
+            <h2><?php echo $data['total_students']; ?></h2>
+        </div>
+    </div>
+
+<?php } ?>
+
+</div>
+
+<a href="admin_dashboard.php" class="back">
+    ⬅ Back Dashboard
+</a>
 
 </body>
 

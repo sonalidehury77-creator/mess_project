@@ -2,10 +2,6 @@
 session_start();
 include("config/db_connect.php");
 
-/* =========================
-LOGIN CHECK
-========================= */
-
 if (!isset($_SESSION['hostel_roll'])) {
     header("Location: login.html");
     exit();
@@ -16,97 +12,52 @@ date_default_timezone_set("Asia/Kolkata");
 $hostel_roll = $_SESSION['hostel_roll'];
 
 /* =========================
-SETTINGS (MATCH ADMIN)
+MONTH SELECT FEATURE
+========================= */
+
+$selected_month = $_GET['month'] ?? date("m");
+$selected_year  = $_GET['year'] ?? date("Y");
+
+$current_month = date("m");
+$current_year  = date("Y");
+
+/* CHECK IF CURRENT MONTH */
+$is_current_month =
+    ($selected_month == $current_month &&
+        $selected_year == $current_year);
+
+$today = date("d");
+$total_days = date("t");
+
+$is_month_complete =
+    (!$is_current_month) || ($today == $total_days);
+
+/* =========================
+SETTINGS
 ========================= */
 
 $min_meals_required = 40;
 $default_meal_price = 33;
 $breakfast_price = 15;
 
-$min_amount =
-    $min_meals_required *
-    $default_meal_price;
+$min_amount = $min_meals_required * $default_meal_price;
 
 /* =========================
-MONTH INFO
-========================= */
-
-$current_month = date("m");
-$current_year  = date("Y");
-
-$today       = date("d");
-$total_days  = date("t");
-
-$is_month_complete =
-    ($today == $total_days);
-
-/* =========================
-FETCH MEALS + MENU
+FETCH MEALS ONLY (NO JOIN)
 ========================= */
 
 $sql = "
-
-SELECT
-
-m.date,
-m.day,
-m.breakfast,
-m.lunch_type,
-m.dinner_type,
-
-menu.is_special,
-
-menu.lunch_veg_price,
-menu.lunch_nonveg_price,
-menu.dinner_veg_price,
-menu.dinner_nonveg_price,
-
-menu.special_lunch_veg_price,
-menu.special_lunch_nonveg_price,
-menu.special_dinner_veg_price,
-menu.special_dinner_nonveg_price,
-
-menu.special_date
-
-FROM meals m
-
-LEFT JOIN menu
-ON (
-
-    (
-        menu.is_special = 1
-        AND m.date = menu.special_date
-    )
-
-    OR
-
-    (
-        menu.is_special = 0
-        AND m.day = menu.day
-    )
-
-)
-
-WHERE m.hostel_roll=?
-
-AND MONTH(m.date)=?
-AND YEAR(m.date)=?
-
-ORDER BY m.date ASC
-
+SELECT *
+FROM meals
+WHERE hostel_roll=?
+AND MONTH(date)=?
+AND YEAR(date)=?
+ORDER BY date ASC
 ";
 
 $stmt = $conn->prepare($sql);
-
-$stmt->bind_param(
-    "sii",
-    $hostel_roll,
-    $current_month,
-    $current_year
-);
-
+$stmt->bind_param("sii", $hostel_roll, $selected_month, $selected_year);
 $stmt->execute();
-
 $result = $stmt->get_result();
 
 /* =========================
@@ -114,17 +65,14 @@ VARIABLES
 ========================= */
 
 $total_amount = 0;
-
 $breakfast_count = 0;
-$lunch_count     = 0;
-$dinner_count    = 0;
-
+$lunch_count = 0;
+$dinner_count = 0;
 $total_meals_taken = 0;
-
 $meals_data = [];
 
 /* =========================
-CALCULATION LOOP
+LOOP
 ========================= */
 
 while ($row = $result->fetch_assoc()) {
@@ -132,175 +80,151 @@ while ($row = $result->fetch_assoc()) {
     $day_total = 0;
 
     /* =========================
-       PRICE DETECTION
+    FETCH CORRECT MENU
     ========================= */
 
-    if ($row['is_special'] == 1) {
+    $menu_sql = "
+    SELECT *
+    FROM menu
+    WHERE 
+        (is_special=1 AND special_date=?)
+        OR
+        (is_special=0 AND day=?)
+    LIMIT 1
+    ";
+
+    $menu_stmt = $conn->prepare($menu_sql);
+    $menu_stmt->bind_param("ss", $row['date'], $row['day']);
+    $menu_stmt->execute();
+    $menu = $menu_stmt->get_result()->fetch_assoc();
+
+    if (!$menu) continue;
+
+    /* =========================
+    PRICE FIX
+    ========================= */
+
+    if ($menu['is_special'] == 1) {
 
         $lunch_veg_price =
-            !empty($row['special_lunch_veg_price'])
-            ? $row['special_lunch_veg_price']
-            : $row['lunch_veg_price'];
+            $menu['special_lunch_veg_price'] ?: $menu['lunch_veg_price'];
 
         $lunch_nonveg_price =
-            !empty($row['special_lunch_nonveg_price'])
-            ? $row['special_lunch_nonveg_price']
-            : $row['lunch_nonveg_price'];
+            $menu['special_lunch_nonveg_price'] ?: $menu['lunch_nonveg_price'];
 
         $dinner_veg_price =
-            !empty($row['special_dinner_veg_price'])
-            ? $row['special_dinner_veg_price']
-            : $row['dinner_veg_price'];
+            $menu['special_dinner_veg_price'] ?: $menu['dinner_veg_price'];
 
         $dinner_nonveg_price =
-            !empty($row['special_dinner_nonveg_price'])
-            ? $row['special_dinner_nonveg_price']
-            : $row['dinner_nonveg_price'];
+            $menu['special_dinner_nonveg_price'] ?: $menu['dinner_nonveg_price'];
     } else {
 
-        $lunch_veg_price  = $row['lunch_veg_price'];
-        $lunch_nonveg_price = $row['lunch_nonveg_price'];
-
-        $dinner_veg_price  = $row['dinner_veg_price'];
-        $dinner_nonveg_price = $row['dinner_nonveg_price'];
+        $lunch_veg_price  = $menu['lunch_veg_price'];
+        $lunch_nonveg_price = $menu['lunch_nonveg_price'];
+        $dinner_veg_price  = $menu['dinner_veg_price'];
+        $dinner_nonveg_price = $menu['dinner_nonveg_price'];
     }
 
     /* =========================
-       BREAKFAST
+    BREAKFAST
     ========================= */
 
     if (!empty($row['breakfast'])) {
-
         $day_total += $breakfast_price;
-
         $breakfast_count++;
-
         $b = "Yes";
     } else {
-
         $b = "No";
     }
 
     /* =========================
-       LUNCH
+    LUNCH
     ========================= */
 
     if (!empty($row['lunch_type'])) {
 
         $lunch_count++;
-
         $l = ucfirst($row['lunch_type']);
 
         if ($row['lunch_type'] == "veg") {
-
             $day_total += (int)$lunch_veg_price;
         } else {
-
             $day_total += (int)$lunch_nonveg_price;
         }
 
         $total_meals_taken++;
     } else {
-
-        $l = "No";
+        $l = "Not Taken";
     }
 
     /* =========================
-       DINNER
+    DINNER
     ========================= */
 
     if (!empty($row['dinner_type'])) {
 
         $dinner_count++;
-
         $d = ucfirst($row['dinner_type']);
 
         if ($row['dinner_type'] == "veg") {
-
             $day_total += (int)$dinner_veg_price;
         } else {
-
             $day_total += (int)$dinner_nonveg_price;
         }
 
         $total_meals_taken++;
     } else {
-
-        $d = "No";
+        $d = "Not Taken";
     }
 
     $total_amount += $day_total;
 
     $meals_data[] = [
-
         'date' => $row['date'],
         'day' => $row['day'],
         'breakfast' => $b,
         'lunch' => $l,
         'dinner' => $d,
         'daily_total' => $day_total
-
     ];
 }
 
 /* =========================
-FINAL BILL CALCULATION
+EMPTY CASE
 ========================= */
 
-$remaining_meals =
-    max(
-        0,
-        $min_meals_required
-            - $total_meals_taken
-    );
-
-if (
-    $total_meals_taken >=
-    $min_meals_required
-) {
-
-    $final_payable =
-        $total_amount;
-
-    $status_text =
-        "✅ Minimum meals completed.";
-
-    $status_class = "success";
+if (empty($meals_data)) {
+    $no_data = true;
 } else {
-
-    $final_payable =
-        max($total_amount, $min_amount);
-
-    $status_text =
-        "⚠ Minimum 40 meals rule applied.";
-
-    $status_class = "warning";
+    $no_data = false;
 }
 
 /* =========================
-MONTH STATUS
+FINAL BILL
 ========================= */
 
-if ($is_month_complete) {
+$remaining_meals =
+    max(0, $min_meals_required - $total_meals_taken);
 
-    $month_status =
-        "🧾 Final Monthly Bill Ready";
+if ($total_meals_taken >= $min_meals_required) {
+
+    $final_payable = $total_amount;
+    $status_text = "✅ Minimum meals completed.";
+    $status_class = "success";
 } else {
 
-    $month_status =
-        "📊 Running Bill Till Today";
+    $final_payable = max($total_amount, $min_amount);
+    $status_text = "⚠ Minimum 40 meals rule applied.";
+    $status_class = "warning";
 }
 
-$current_month_name =
-    date("F Y");
-
+$month_name = date("F Y", strtotime("$selected_year-$selected_month-01"));
 ?>
 
 <!DOCTYPE html>
 <html>
 
 <head>
-
     <title>My Monthly Bill</title>
 
     <style>
@@ -310,31 +234,12 @@ $current_month_name =
             text-align: center;
         }
 
-        /* SUMMARY CARD */
-
         .summary {
-
             width: 60%;
             margin: 20px auto;
-
             background: white;
-
             padding: 20px;
-
             border-radius: 12px;
-
-            box-shadow: 0 5px 15px rgba(0, 0, 0, .1);
-
-            text-align: left;
-        }
-
-        .summary h3 {
-            margin-top: 0;
-        }
-
-        .status {
-            font-size: 18px;
-            font-weight: bold;
         }
 
         .success {
@@ -351,49 +256,30 @@ $current_month_name =
             color: green;
         }
 
-        /* TABLE */
-
         table {
-
             width: 95%;
             margin: 20px auto;
-
             border-collapse: collapse;
-
             background: white;
         }
 
         th {
-
             background: #007bff;
             color: white;
-
             padding: 10px;
         }
 
         td {
-
             padding: 8px;
             border-bottom: 1px solid #ddd;
         }
 
-        /* BUTTON */
-
         .btn {
-
-            display: inline-block;
-
             padding: 10px 15px;
-
-            margin-top: 10px;
-
             background: #007bff;
-
             color: white;
-
-            text-decoration: none;
-
             border-radius: 8px;
+            text-decoration: none;
         }
     </style>
 
@@ -401,126 +287,129 @@ $current_month_name =
 
 <body>
 
-    <h2>
-        📅 Monthly Bill —
-        <?php echo $current_month_name; ?>
-    </h2>
+    <h2>📅 Monthly Bill — <?php echo $month_name; ?></h2>
 
-    <div class="summary">
+    <!-- FILTER -->
+    <form method="get">
+        <select name="month">
+            <?php for ($m = 1; $m <= 12; $m++) { ?>
+                <option value="<?php echo $m; ?>" <?php if ($m == $selected_month) echo "selected"; ?>>
+                    <?php echo date("F", mktime(0, 0, 0, $m, 1)); ?>
+                </option>
+            <?php } ?>
+        </select>
 
-        <p class="status">
-            <?php echo $month_status; ?>
-        </p>
+        <select name="year">
+            <?php for ($y = 2024; $y <= date("Y"); $y++) { ?>
+                <option value="<?php echo $y; ?>" <?php if ($y == $selected_year) echo "selected"; ?>>
+                    <?php echo $y; ?>
+                </option>
+            <?php } ?>
+        </select>
 
-        <hr>
+        <button class="btn">View</button>
+    </form>
 
-        <p>🍽 Breakfast: <b><?php echo $breakfast_count; ?></b></p>
+    <?php if ($no_data) { ?>
 
-        <p>🍛 Lunch: <b><?php echo $lunch_count; ?></b></p>
+        <h3>⚠ No meal data found for this month</h3>
 
-        <p>🌙 Dinner: <b><?php echo $dinner_count; ?></b></p>
+    <?php } else { ?>
 
-        <hr>
+        <div class="summary">
 
-        <p>Total Meals:
-            <b><?php echo $total_meals_taken; ?></b>
-        </p>
+            <p>🍽 Breakfast: <b><?php echo $breakfast_count; ?></b></p>
+            <p>🍛 Lunch: <b><?php echo $lunch_count; ?></b></p>
+            <p>🌙 Dinner: <b><?php echo $dinner_count; ?></b></p>
 
-        <p>Remaining Meals:
-            <b><?php echo $remaining_meals; ?></b>
-        </p>
+            <hr>
 
-        <hr>
+            <p>Total Meals: <b><?php echo $total_meals_taken; ?></b></p>
+            <p>Remaining Meals: <b><?php echo $remaining_meals; ?></b></p>
 
-        <p>Actual Amount:
-            <b>₹ <?php echo $total_amount; ?></b>
-        </p>
+            <hr>
 
-        <p>Minimum Rule:
-            <b>₹ <?php echo $min_amount; ?></b>
-        </p>
+            <p>Actual Amount: <b>₹ <?php echo $total_amount; ?></b></p>
+            <p>Minimum Rule: <b>₹ <?php echo $min_amount; ?></b></p>
 
-        <hr>
+            <hr>
 
-        <p class="final">
+            <p class="final">Final Payable: ₹ <?php echo $final_payable; ?></p>
 
-            Final Payable:
-            ₹ <?php echo $final_payable; ?>
+            <?php if ($is_current_month && $total_meals_taken < $min_meals_required) { ?>
 
-        </p>
+                <div style="
+        background:#fff3cd;
+        border-left:5px solid #ff9800;
+        padding:12px;
+        margin-top:15px;
+        border-radius:8px;
+        color:#856404;
+        font-weight:500;
+    ">
 
-        <p class="<?php echo $status_class; ?>">
+                    ⚠ <b>Minimum Meal Policy Notice</b><br><br>
 
-            <?php echo $status_text; ?>
+                    You have taken <b><?php echo $total_meals_taken; ?></b> meals so far this month.
 
-        </p>
+                    <br><br>
 
-    </div>
+                    As per hostel rules, a minimum of
+                    <b><?php echo $min_meals_required; ?> meals</b>
+                    is required each month.
 
-    <table>
+                    <br><br>
 
-        <tr>
+                    If the minimum is not completed by the end of the month,
+                    the bill will be calculated based on the minimum requirement amount
+                    (₹ <?php echo $min_amount; ?>).
 
-            <th>Date</th>
-            <th>Day</th>
-            <th>Breakfast</th>
-            <th>Lunch</th>
-            <th>Dinner</th>
-            <th>Amount ₹</th>
+                </div>
 
-        </tr>
+            <?php } ?>
 
-        <?php foreach ($meals_data as $meal) { ?>
+            <p class="<?php echo $status_class; ?>">
+                <?php echo $status_text; ?>
+            </p>
 
+        </div>
+
+        <table>
             <tr>
-
-                <td>
-                    <?php echo date("d M", strtotime($meal['date'])); ?>
-                </td>
-
-                <td>
-                    <?php echo $meal['day']; ?>
-                </td>
-
-                <td>
-                    <?php echo $meal['breakfast']; ?>
-                </td>
-
-                <td>
-                    <?php echo $meal['lunch']; ?>
-                </td>
-
-                <td>
-                    <?php echo $meal['dinner']; ?>
-                </td>
-
-                <td>
-                    ₹ <?php echo $meal['daily_total']; ?>
-                </td>
-
+                <th>Date</th>
+                <th>Day</th>
+                <th>Breakfast</th>
+                <th>Lunch</th>
+                <th>Dinner</th>
+                <th>Amount ₹</th>
             </tr>
+
+            <?php foreach ($meals_data as $meal) { ?>
+                <tr>
+                    <td><?php echo date("d M", strtotime($meal['date'])); ?></td>
+                    <td><?php echo $meal['day']; ?></td>
+                    <td><?php echo $meal['breakfast']; ?></td>
+                    <td><?php echo $meal['lunch']; ?></td>
+                    <td><?php echo $meal['dinner']; ?></td>
+                    <td>₹ <?php echo $meal['daily_total']; ?></td>
+                </tr>
+            <?php } ?>
+
+        </table>
+
+        <?php if (!$is_current_month || $today == $total_days) { ?>
+
+            <a class="btn"
+                href="student_print_bill.php?month=<?php echo $selected_month; ?>&year=<?php echo $selected_year; ?>">
+                📄 View Final Bill
+            </a>
 
         <?php } ?>
 
-    </table>
-
-    <a
-        class="btn"
-        href="student_print_bill.php">
-
-        🖨 Print Bill
-
-    </a>
+    <?php } ?>
 
     <br><br>
-
-    <a
-        class="btn"
-        href="student_dashboard.php">
-
-        ⬅ Back Dashboard
-
-    </a>
+    <a class="btn" href="student_dashboard.php">⬅ Back Dashboard</a>
 
 </body>
 

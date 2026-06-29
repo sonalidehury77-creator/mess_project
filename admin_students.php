@@ -364,9 +364,9 @@ $total_pages =
 
     <div class="button-bar">
 
-        <a href="?export=1" class="btn export">
+        <!--<a href="?export=1" class="btn export">
             📥 Export CSV
-        </a>
+        </a>-->
 
         <a href="#" onclick="printTable()" class="btn print">
             🖨 Print List

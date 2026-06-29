@@ -407,6 +407,28 @@ if ($isExpired && !$isLocked) {
             font-weight: bold;
 
         }
+
+        .welcome-box {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .welcome-box h2 {
+            font-size: 26px;
+            color: #333;
+            margin: 0;
+        }
+
+        .welcome-box .name {
+            color: #ff416c;
+            font-weight: bold;
+        }
+
+        .subtitle {
+            margin-top: 8px;
+            font-size: 15px;
+            color: #666;
+        }
     </style>
 
     <script>
@@ -537,12 +559,19 @@ if ($isExpired && !$isLocked) {
     <div class="container">
 
         <h2>
-
-            🍽️ Welcome,
-            <?php echo htmlspecialchars($_SESSION['name']); ?>
-            👋
-
+            🍽️ Meal Selection
         </h2>
+
+        <div class="welcome-box">
+
+            <h2>
+                👋 Hello,
+                <span class="name">
+                    <?php echo htmlspecialchars($_SESSION['name']); ?>
+                </span>
+            </h2>
+
+        </div>
 
         <div style="text-align:center;">
 
@@ -556,16 +585,13 @@ if ($isExpired && !$isLocked) {
         </div>
 
         <h3>
-
-            📅 Today:
-            <?php echo $today; ?>
-
-            <br>
-
-            🍽 Tomorrow Meal:
-            <?php echo $day; ?>
-
+            🍽 Select Your Meal for
+            <?php echo date("l, d M Y", strtotime($tomorrow_date)); ?>
         </h3>
+
+        <p style="text-align:center; color:#555;">
+            Please choose your meals before <b>10:00 PM today</b>
+        </p>
 
         <p id="timer"
             class="timer"></p>
@@ -770,43 +796,6 @@ Base: " .
         </div>
 
 
-        <?php
-
-        $estimate = 0;
-
-        if (
-            !empty($selected['breakfast'])
-            && isset($row['breakfast_price'])
-        ) {
-
-            $estimate += $row['breakfast_price'];
-        }
-
-        if (!empty($selected['lunch'])) {
-
-            if ($selected['lunch_type'] == "nonveg")
-                $estimate += $lunch_nonveg_price;
-            else
-                $estimate += $lunch_veg_price;
-        }
-
-        if (!empty($selected['dinner'])) {
-
-            if ($selected['dinner_type'] == "nonveg")
-                $estimate += $dinner_nonveg_price;
-            else
-                $estimate += $dinner_veg_price;
-        }
-
-        ?>
-
-        <div class="card">
-
-            <b>💰 Estimated Cost:</b>
-
-            ₹ <?php echo $estimate; ?>
-
-        </div>
         <hr>
 
         <form method="post"

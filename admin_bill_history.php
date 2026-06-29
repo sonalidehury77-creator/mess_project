@@ -8,22 +8,33 @@ if (!isset($_SESSION['admin'])) {
 }
 
 /* ===============================
-DEFAULT → PREVIOUS MONTH
+MARK STATUS (PAID / PENDING)
 =============================== */
 
-if (isset($_GET['month'])) {
+if (isset($_GET['set_status']) && isset($_GET['id'])) {
 
-    $month  = $_GET['month'];
-    $year   = $_GET['year'];
-} else {
+    $id = intval($_GET['id']);
+    $status = $_GET['set_status'] == 'paid' ? 'paid' : 'pending';
 
-    $month =
-        date('m', strtotime("first day of previous month"));
+    if ($status == 'paid') {
+        $stmt = $conn->prepare("UPDATE bills SET status='paid', paid_at=NOW() WHERE id=?");
+    } else {
+        $stmt = $conn->prepare("UPDATE bills SET status='pending', paid_at=NULL WHERE id=?");
+    }
 
-    $year  =
-        date('Y', strtotime("first day of previous month"));
+    $stmt->bind_param("i", $id);
+    $stmt->execute();
+
+    header("Location: admin_bill_history.php?month=$month&year=$year&search=$search");
+    exit();
 }
 
+/* ===============================
+FILTERS
+=============================== */
+
+$month  = $_GET['month'] ?? '';
+$year   = $_GET['year'] ?? '';
 $search = $_GET['search'] ?? '';
 
 /* ===============================
@@ -31,18 +42,13 @@ QUERY
 =============================== */
 
 $sql = "
-
 SELECT 
-bills.*,
-student.name,
-student.room_number
-
+    bills.*,
+    student.name,
+    student.room_number
 FROM bills
-
-JOIN student
-ON bills.hostel_roll =
-student.hostel_roll
-
+JOIN student 
+ON bills.hostel_roll = student.hostel_roll
 WHERE 1
 ";
 
@@ -50,67 +56,45 @@ $params = [];
 $types  = "";
 
 /* MONTH */
-
 if ($month != "") {
-
     $sql .= " AND bills.month=? ";
     $params[] = $month;
     $types .= "i";
 }
 
 /* YEAR */
-
 if ($year != "") {
-
     $sql .= " AND bills.year=? ";
     $params[] = $year;
     $types .= "i";
 }
 
 /* SEARCH */
-
 if ($search != "") {
 
     $sql .= "
-
-AND (
-student.name LIKE ?
-OR bills.hostel_roll LIKE ?
-)
-
-";
+    AND (
+        student.name LIKE ?
+        OR bills.hostel_roll LIKE ?
+    )";
 
     $like = "%$search%";
-
     $params[] = $like;
     $params[] = $like;
-
     $types .= "ss";
 }
 
 $sql .= "
-
-ORDER BY
-bills.year DESC,
-bills.month DESC,
-CAST(bills.hostel_roll AS UNSIGNED)
-
+ORDER BY bills.year DESC, bills.month DESC, CAST(bills.hostel_roll AS UNSIGNED)
 ";
-
-/* EXECUTE */
 
 $stmt = $conn->prepare($sql);
 
 if (!empty($params)) {
-
-    $stmt->bind_param(
-        $types,
-        ...$params
-    );
+    $stmt->bind_param($types, ...$params);
 }
 
 $stmt->execute();
-
 $result = $stmt->get_result();
 
 /* ===============================
@@ -119,22 +103,13 @@ SUMMARY
 
 $total_records = 0;
 $total_amount  = 0;
+$paid_count = 0;
+$pending_count = 0;
 
-/* TOTAL REVENUE TILL NOW */
+/* TOTAL REVENUE */
 
-$totalRevenueQuery =
-    $conn->query("
-
-SELECT SUM(total_amount) as total
-FROM bills
-
-");
-
-$rev =
-    $totalRevenueQuery->fetch_assoc();
-
-$total_till_now =
-    $rev['total'] ?? 0;
+$rev = $conn->query("SELECT SUM(total_amount) as total FROM bills")->fetch_assoc();
+$total_till_now = $rev['total'] ?? 0;
 
 ?>
 
@@ -142,7 +117,6 @@ $total_till_now =
 <html>
 
 <head>
-
     <title>📜 Bill History</title>
 
     <style>
@@ -152,145 +126,113 @@ $total_till_now =
             margin: 0;
         }
 
-        /* HEADER */
-
         .header {
-
             background: #007bff;
             color: white;
-
             padding: 15px;
             text-align: center;
-
             font-size: 22px;
-
         }
 
-        /* FILTER */
-
         .filter {
-
             background: white;
             padding: 15px;
-
             text-align: center;
-
         }
 
         input,
         select {
-
             padding: 8px;
-            margin: 4px;
-
+            margin: 5px;
         }
 
         button {
-
             padding: 8px 12px;
-
             background: #007bff;
             color: white;
-
             border: none;
-
             cursor: pointer;
-
         }
 
-        /* TABLE */
-
         table {
-
             width: 96%;
             margin: 20px auto;
-
             border-collapse: collapse;
             background: white;
-
         }
 
         th {
-
             background: #007bff;
             color: white;
-
             padding: 10px;
-
         }
 
         td {
-
             padding: 8px;
-
             border-bottom: 1px solid #ddd;
-
+            text-align: center;
         }
 
         tr:hover {
-
             background: #f1f1f1;
-
         }
 
-        /* BUTTON */
+        .paid {
+            color: green;
+            font-weight: bold;
+        }
 
-        .view-btn {
+        .pending {
+            color: red;
+            font-weight: bold;
+        }
 
-            background: green;
+        .btn {
+            padding: 6px 10px;
             color: white;
-
-            padding: 5px 10px;
-
             border-radius: 6px;
             text-decoration: none;
-
+            font-size: 13px;
         }
 
-        /* SUMMARY */
+        .green {
+            background: green;
+        }
+
+        .orange {
+            background: orange;
+        }
+
+        .blue {
+            background: #007bff;
+        }
 
         .summary {
-
             display: flex;
             justify-content: center;
             flex-wrap: wrap;
-
         }
 
         .card {
-
             background: white;
-
             padding: 15px;
             margin: 10px;
-
             width: 220px;
-
             border-radius: 10px;
-
-            box-shadow:
-                0 4px 10px rgba(0, 0, 0, .1);
-
+            text-align: center;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, .1);
         }
 
         .back {
-
             display: block;
-
-            width: 200px;
+            width: 220px;
             margin: 20px auto;
-
             text-align: center;
-
             padding: 10px;
-
             background: #333;
             color: white;
-
             border-radius: 8px;
-
             text-decoration: none;
-
         }
     </style>
 
@@ -299,226 +241,108 @@ $total_till_now =
 <body>
 
     <div class="header">
-
-        📜 Bill History
-
+        📜 Advanced Bill History
     </div>
 
     <!-- FILTER -->
-
     <div class="filter">
-
         <form method="GET">
 
             <select name="month">
-
-                <option value="">
-                    All Months
-                </option>
-
-                <?php
-
-                for ($m = 1; $m <= 12; $m++) {
-
-                    $sel =
-                        ($month == $m)
-                        ? "selected" : "";
-
-                    $monthName =
-                        date(
-                            "F",
-                            mktime(0, 0, 0, $m, 1)
-                        );
-
-                    echo "
-
-<option
-value='$m'
-$sel>
-
-$monthName
-
-</option>
-
-";
-                }
-
-                ?>
-
+                <option value="">All Months</option>
+                <?php for ($m = 1; $m <= 12; $m++) { ?>
+                    <option value="<?php echo $m; ?>" <?php if ($month == $m) echo "selected"; ?>>
+                        <?php echo date("F", mktime(0, 0, 0, $m, 1)); ?>
+                    </option>
+                <?php } ?>
             </select>
 
             <select name="year">
-
-                <option value="">
-                    All Years
-                </option>
-
-                <?php
-
-                for ($y = 2023; $y <= 2035; $y++) {
-
-                    $sel =
-                        ($year == $y)
-                        ? "selected" : "";
-
-                    echo "
-
-<option
-value='$y'
-$sel>
-
-$y
-
-</option>
-
-";
-                }
-
-                ?>
-
+                <option value="">All Years</option>
+                <?php for ($y = 2023; $y <= date("Y"); $y++) { ?>
+                    <option value="<?php echo $y; ?>" <?php if ($year == $y) echo "selected"; ?>>
+                        <?php echo $y; ?>
+                    </option>
+                <?php } ?>
             </select>
 
-            <input
-                type="text"
-                name="search"
-                placeholder="Search Name / Roll"
-                value="<?php
-                        echo htmlspecialchars($search);
-                        ?>">
+            <input type="text" name="search" placeholder="Search Name / Roll"
+                value="<?php echo htmlspecialchars($search); ?>">
 
-            <button>
-
-                🔍 Filter
-
-            </button>
+            <button>🔍 Filter</button>
 
         </form>
-
     </div>
 
     <!-- TABLE -->
-
     <table>
 
         <tr>
-
             <th>Name</th>
             <th>Roll</th>
             <th>Room</th>
             <th>Month</th>
             <th>Year</th>
             <th>Amount ₹</th>
-            <th>Date</th>
-            <th>View</th>
-
+            <th>Status</th>
+            <th>Paid On</th>
+            <th>Actions</th>
         </tr>
 
-        <?php
-
-        while ($row =
-            $result->fetch_assoc()
-        ) {
+        <?php while ($row = $result->fetch_assoc()) {
 
             $total_records++;
+            $total_amount += $row['total_amount'];
 
-            $total_amount
-                += $row['total_amount'];
+            if ($row['status'] == 'paid') $paid_count++;
+            else $pending_count++;
 
-            $monthName =
-                date(
-                    "F",
-                    mktime(
-                        0,
-                        0,
-                        0,
-                        $row['month'],
-                        1
-                    )
-                );
-
+            $monthName = date("F", mktime(0, 0, 0, $row['month'], 1));
         ?>
 
             <tr>
 
+                <td><?php echo $row['name']; ?></td>
+                <td><?php echo $row['hostel_roll']; ?></td>
+                <td><?php echo $row['room_number']; ?></td>
+                <td><?php echo $monthName; ?></td>
+                <td><?php echo $row['year']; ?></td>
+                <td>₹ <?php echo number_format($row['total_amount']); ?></td>
+
                 <td>
+                    <?php if ($row['status'] == 'paid') { ?>
+                        <span class="paid">✅ Paid</span>
+                    <?php } else { ?>
+                        <span class="pending">⏳ Pending</span>
+                    <?php } ?>
+                </td>
 
-                    <?php
-                    echo $row['name'];
-                    ?>
-
+                <td>
+                    <?php echo $row['paid_at'] ? date("d M Y", strtotime($row['paid_at'])) : "-"; ?>
                 </td>
 
                 <td>
 
-                    <?php
-                    echo $row['hostel_roll'];
-                    ?>
-
-                </td>
-
-                <td>
-
-                    <?php
-                    echo $row['room_number'];
-                    ?>
-
-                </td>
-
-                <td>
-
-                    <?php
-                    echo $monthName;
-                    ?>
-
-                </td>
-
-                <td>
-
-                    <?php
-                    echo $row['year'];
-                    ?>
-
-                </td>
-
-                <td>
-
-                    ₹ <?php
-                        echo number_format(
-                            $row['total_amount']
-                        );
-                        ?>
-
-                </td>
-
-                <td>
-
-                    <?php
-
-                    echo date(
-                        "d M Y",
-                        strtotime(
-                            $row['generated_at']
-                        )
-
-                    );
-
-                    ?>
-
-                </td>
-
-                <td>
-
-                    <a
-                        class="view-btn"
-
-                        href="view_bill.php?
-roll=<?php echo $row['hostel_roll']; ?>
-&month=<?php echo $row['month']; ?>
-&year=<?php echo $row['year']; ?>">
-
+                    <a class="btn blue"
+                        href="view_bill.php?roll=<?php echo $row['hostel_roll']; ?>&month=<?php echo $row['month']; ?>&year=<?php echo $row['year']; ?>">
                         📄 View
-
                     </a>
+
+                    <?php if ($row['status'] == 'paid') { ?>
+
+                        <a class="btn orange"
+                            href="admin_bill_history.php?set_status=pending&id=<?php echo $row['id']; ?>&month=<?php echo $month; ?>&year=<?php echo $year; ?>&search=<?php echo $search; ?>">
+                            Mark Pending
+                        </a>
+
+                    <?php } else { ?>
+
+                        <a class="btn green"
+                            href="admin_bill_history.php?set_status=paid&id=<?php echo $row['id']; ?>&month=<?php echo $month; ?>&year=<?php echo $year; ?>&search=<?php echo $search; ?>">
+                            Mark Paid
+                        </a>
+
+                    <?php } ?>
 
                 </td>
 
@@ -529,63 +353,37 @@ roll=<?php echo $row['hostel_roll']; ?>
     </table>
 
     <!-- SUMMARY -->
-
     <div class="summary">
 
         <div class="card">
-
             📄 Records
-
-            <h2>
-
-                <?php
-                echo $total_records;
-                ?>
-
-            </h2>
-
+            <h2><?php echo $total_records; ?></h2>
         </div>
 
         <div class="card">
-
-            💰 This Filter Total
-
-            <h2>
-
-                ₹ <?php
-                    echo number_format(
-                        $total_amount
-                    );
-                    ?>
-
-            </h2>
-
+            💰 Filter Total
+            <h2>₹ <?php echo number_format($total_amount); ?></h2>
         </div>
 
         <div class="card">
+            ✅ Paid
+            <h2><?php echo $paid_count; ?></h2>
+        </div>
 
-            📊 Revenue Till Now
+        <div class="card">
+            ⏳ Pending
+            <h2><?php echo $pending_count; ?></h2>
+        </div>
 
-            <h2>
-
-                ₹ <?php
-                    echo number_format(
-                        $total_till_now
-                    );
-                    ?>
-
-            </h2>
-
+        <div class="card">
+            📊 Total Revenue
+            <h2>₹ <?php echo number_format($total_till_now); ?></h2>
         </div>
 
     </div>
 
-    <a
-        href="admin_dashboard.php"
-        class="back">
-
+    <a href="admin_dashboard.php" class="back">
         ⬅ Back Dashboard
-
     </a>
 
 </body>
