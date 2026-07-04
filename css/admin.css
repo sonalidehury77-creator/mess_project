@@ -1,0 +1,132 @@
+/**
+ * 🏢 Enterprise HostelMess Administrative UI Utility Overrides
+ * Design System Core Engine, Layout Utilities, Bento Structuring & Keyframe Animations
+ */
+
+:root {
+    --sidebar-width: 16rem;
+    --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-fast: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+    
+    /* Advanced Elevation Tokens */
+    --shadow-subtle: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+    --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.05), 0 2px 4px -2px rgb(0 0 0 / 0.05);
+    --shadow-elevation: 0 20px 25px -5px rgb(0 0 0 / 0.05), 0 8px 10px -6px rgb(0 0 0 / 0.05);
+    
+    /* Custom Theme Accent Vectors */
+    --admin-accent: #2563eb;
+    --admin-accent-hover: #1d4ed8;
+}
+
+/* ==========================================================================
+   1. WEB WORKSPACE CUSTOM SCROLLBAR LAYERS
+   ========================================================================== */
+.custom-scrollbar::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+    background: #f1f5f9;
+    border-radius: 8px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 8px;
+    transition: var(--transition-fast);
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+}
+
+/* ==========================================================================
+   2. INTELLIGENT BENTO STATS & MATRIX CARDS
+   ========================================================================== */
+.metric-bento-card {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 1rem;
+    padding: 1.5rem;
+    box-shadow: var(--shadow-subtle);
+    transition: var(--transition-smooth);
+}
+
+.metric-bento-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-elevation);
+    border-color: var(--admin-accent);
+}
+
+/* Data-Grid Data Form Entries Optimization Fields */
+.form-input-container {
+    transition: var(--transition-fast);
+}
+.form-input-container:focus {
+    border-color: var(--admin-accent);
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+}
+
+/* ==========================================================================
+   3. SYSTEM RUNTIME GLOW & LIVE FEEDBACK PULSES
+   ========================================================================== */
+.pulse-live {
+    position: relative;
+}
+
+.pulse-live::after {
+    content: '';
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+    background: inherit;
+    border-radius: inherit;
+    animation: pulse-ring 1.8s cubic-bezier(0.24, 0, 0.38, 1) infinite;
+    z-index: 1;
+}
+
+@keyframes pulse-ring {
+    0% { transform: scale(0.95); opacity: 0.8; }
+    50% { opacity: 0.3; }
+    100% { transform: scale(1.6); opacity: 0; }
+}
+
+/* ==========================================================================
+   4. SYSTEM INTERRUPT BACKDROPS & MODAL SANDBOX LAYERS
+   ========================================================================== */
+.modal-backdrop-blur {
+    background-color: rgba(15, 23, 42, 0.4);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    transition: var(--transition-smooth);
+}
+
+/* Interactive Survey/Poll Vote Metrix Trackers */
+.poll-bar-fill {
+    transition: width 1s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Shimmer Skeletal Loading Effects for Async Tasks */
+.shimmer-loading {
+    background: linear-gradient(90deg, #f1f5f9 25%, #e2e8f0 50%, #f1f5f9 75%);
+    background-size: 200% 100%;
+    animation: shimmer-animation 1.5s infinite linear;
+}
+
+@keyframes shimmer-animation {
+    0% { background-position: -200% 0; }
+    100% { background-position: 200% 0; }
+}
+
+/* Custom fade animations for smooth structural layout renders */
+.animate-fade-in {
+    animation: fadeInEffect 0.25s ease-out forwards;
+}
+
+@keyframes fadeInEffect {
+    from { opacity: 0; transform: scale(0.98); }
+    to { opacity: 1; transform: scale(1); }
+}

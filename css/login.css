@@ -1,0 +1,295 @@
+/**
+ * 🔐 Enterprise Authentication UI Stylesheet
+ * Handles Login, Registration, and Password Reset Interfaces
+ * Theme: Soft Slate Background + Crisp White Card + Emerald Interactions
+ */
+
+/* ==========================================================================
+   1. CORE DESIGN TOKENS & VARIABLES
+   ========================================================================== */
+:root {
+    /* Brand Palette */
+    --brand-navy: #0B132B;
+    --brand-emerald: #10B981;
+    --brand-emerald-hover: #059669;
+    --brand-emerald-light: #ecfdf5;
+    
+    /* Surface & Backgrounds */
+    --bg-page: #F8FAFC;
+    --bg-card: #FFFFFF;
+    --bg-input: #F1F5F9;
+    
+    /* Typography */
+    --text-primary: #0F172A;
+    --text-secondary: #475569;
+    --text-muted: #94A3B8;
+    
+    /* Borders & Shadows */
+    --border-soft: #E2E8F0;
+    --shadow-card: 0 20px 25px -5px rgb(0 0 0 / 0.05), 0 8px 10px -6px rgb(0 0 0 / 0.05);
+    --shadow-input-focus: 0 0 0 4px rgba(16, 185, 129, 0.15);
+    
+    /* Animation Timings */
+    --transition-fast: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ==========================================================================
+   2. GLOBAL RESET & BASE STYLES
+   ========================================================================== */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+    /* Premium subtle radial gradient for depth */
+    background: radial-gradient(circle at 50% -20%, #e2e8f0 0%, var(--bg-page) 100%);
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: var(--text-primary);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    padding: 1.5rem;
+}
+
+/* ==========================================================================
+   3. AUTHENTICATION CARD CONTAINER & ANIMATIONS
+   ========================================================================== */
+.container {
+    width: 100%;
+    max-width: 420px;
+    background: var(--bg-card);
+    padding: 2.5rem;
+    border-radius: 1.25rem;
+    border: 1px solid #ffffff; /* Gives a crisp edge against the shadow */
+    box-shadow: var(--shadow-card);
+    text-align: center;
+    /* Advanced entrance micro-interaction */
+    opacity: 0;
+    animation: authCardEntrance 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes authCardEntrance {
+    0% {
+        opacity: 0;
+        transform: translateY(30px) scale(0.96);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+/* Header Typography & Icons */
+.icon {
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+    display: inline-block;
+    color: var(--brand-emerald);
+}
+
+h2 {
+    color: var(--brand-navy);
+    font-size: 1.5rem;
+    font-weight: 800;
+    margin-bottom: 2rem;
+    letter-spacing: -0.025em;
+}
+
+/* ==========================================================================
+   4. FORM INPUT COMPONENTS
+   ========================================================================== */
+.input-box {
+    margin-bottom: 1.25rem;
+    text-align: left;
+}
+
+label {
+    font-size: 0.8125rem;
+    font-weight: 600;
+    display: block;
+    margin-bottom: 0.5rem;
+    color: var(--text-secondary);
+    letter-spacing: 0.01em;
+}
+
+input {
+    width: 100%;
+    padding: 0.875rem 1rem;
+    border-radius: 0.75rem;
+    border: 1px solid var(--border-soft);
+    background-color: var(--bg-input);
+    color: var(--text-primary);
+    font-size: 0.95rem;
+    outline: none;
+    transition: var(--transition-fast);
+}
+
+/* A11y & Visual Focus Ring */
+input:focus {
+    border-color: var(--brand-emerald);
+    background-color: var(--bg-card);
+    box-shadow: var(--shadow-input-focus);
+}
+
+input::placeholder {
+    color: var(--text-muted);
+}
+
+/* Password Box Positioning Wrapper */
+.password-wrapper {
+    position: relative;
+}
+
+.password-wrapper input {
+    padding-right: 3rem; /* Make room for the eye icon */
+}
+
+.toggle {
+    position: absolute;
+    right: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    cursor: pointer;
+    color: var(--text-muted);
+    font-size: 1.1rem;
+    user-select: none;
+    transition: var(--transition-fast);
+    padding: 0.25rem; /* Larger click target area */
+}
+
+.toggle:hover {
+    color: var(--brand-navy);
+}
+
+/* ==========================================================================
+   5. INTERACTIVE BUTTONS & CALLS TO ACTION
+   ========================================================================== */
+button {
+    width: 100%;
+    padding: 0.875rem;
+    background: var(--brand-emerald);
+    color: white;
+    border: none;
+    border-radius: 0.75rem;
+    font-size: 1rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: var(--transition-fast);
+    border: 1px solid var(--brand-emerald-hover);
+    margin-top: 0.5rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+button:hover:not(:disabled) {
+    background: var(--brand-emerald-hover);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.25);
+}
+
+button:active:not(:disabled) {
+    transform: translateY(0);
+}
+
+button:disabled {
+    background: var(--text-muted);
+    border-color: var(--text-muted);
+    cursor: not-allowed;
+    opacity: 0.7;
+}
+
+/* Student Registration Upload Button Element State Override */
+.upload-btn-label {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    background: var(--brand-emerald-light) !important;
+    color: var(--brand-emerald-hover) !important;
+    border: 1px dashed var(--brand-emerald) !important;
+    padding: 1rem;
+    border-radius: 0.75rem;
+    cursor: pointer;
+    transition: var(--transition-fast);
+    width: 100%;
+    font-weight: 600;
+    font-size: 0.875rem;
+}
+
+.upload-btn-label:hover {
+    background: var(--brand-emerald) !important;
+    color: white !important;
+    border-style: solid !important;
+}
+
+/* ==========================================================================
+   6. ERROR & SUCCESS ALERT MESSAGES (Specific to Login/Auth)
+   ========================================================================== */
+.auth-alert {
+    padding: 0.75rem 1rem;
+    border-radius: 0.5rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    text-align: left;
+}
+
+.auth-alert.error {
+    background: #FEF2F2;
+    color: #991B1B;
+    border: 1px solid #FECACA;
+}
+
+.auth-alert.success {
+    background: #F0FDF4;
+    color: #166534;
+    border: 1px solid #BBF7D0;
+}
+
+/* ==========================================================================
+   7. FOOTER LINKS & NAVIGATION PANELS
+   ========================================================================== */
+.footer, .login-link {
+    margin-top: 1.5rem;
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+    text-align: center;
+}
+
+.footer a, .login-link a {
+    color: var(--brand-emerald);
+    text-decoration: none;
+    font-weight: 700;
+    transition: var(--transition-fast);
+}
+
+.footer a:hover, .login-link a:hover {
+    color: var(--brand-emerald-hover);
+    text-decoration: underline;
+}
+
+/* ==========================================================================
+   8. MOBILE RESPONSIVENESS ADAPTATIONS
+   ========================================================================== */
+@media (max-width: 480px) {
+    .container {
+        padding: 2rem 1.5rem;
+        border-radius: 1rem;
+        box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.05);
+    }
+    
+    h2 {
+        font-size: 1.25rem;
+    }
+}

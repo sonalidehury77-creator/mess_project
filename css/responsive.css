@@ -1,0 +1,235 @@
+/**
+ * 📱 Enterprise Adaptive Framework & Breakpoint Engine
+ * Layout Compressions, Flex/Grid Conversions, Print Renders, and A11y
+ */
+
+/* ==========================================================================
+   1. TABLET & COMPACT DESKTOP (Max 1024px)
+   ========================================================================== */
+@media screen and (max-width: 1024px) {
+    :root {
+        --sidebar-width: 5rem;
+    }
+
+    /* Intelligent Sidebar Collapse */
+    aside.w-64 {
+        width: var(--sidebar-width);
+        transition: width 0.3s ease;
+    }
+    
+    aside.w-64 h2,
+    aside.w-64 p,
+    aside.w-64 span,
+    aside.w-64 font,
+    .sidebar-text-label {
+        display: none;
+    }
+    
+    aside.w-64 nav a {
+        justify-content: center;
+        padding: 0.875rem;
+    }
+    
+    aside.w-64 nav a i {
+        margin: 0;
+        font-size: 1.25rem;
+    }
+
+    /* Adjust main workspace margin to accommodate collapsed sidebar */
+    .main-content-wrapper {
+        margin-left: var(--sidebar-width);
+    }
+}
+
+/* ==========================================================================
+   2. MOBILE & SMARTPHONES (Max 768px)
+   ========================================================================== */
+@media screen and (max-width: 768px) {
+    /* Safe Area Insets for modern phones (iPhone Notches, curved edges) */
+    body {
+        padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+    }
+
+    .main-workspace-grid,
+    .container {
+        padding: 1rem;
+        margin-top: 1rem;
+    }
+
+    /* Convert structural twin grids to single stack flows */
+    .grid-2,
+    .grid-3,
+    .dashboard-split-layout,
+    .charts-double-row,
+    .analytics-split-view {
+        grid-template-columns: 1fr;
+        gap: 1.25rem;
+    }
+
+    /* Compress standard padding envelopes on cards */
+    .card,
+    .workspace-block-card,
+    .invoice-card {
+        padding: 1.25rem;
+        border-radius: 1rem;
+    }
+
+    /* Transform summary cards row blocks to adapt to multi-row setups */
+    .metrics-board,
+    .metrics-board-row,
+    .metrics-bento-grid {
+        grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+        gap: 1rem;
+    }
+
+    .metric-card-box {
+        padding: 1rem;
+        flex-direction: column;
+        align-items: flex-start;
+        text-align: left;
+    }
+
+    /* Reposition action docks and alignment elements */
+    .header-wrapper,
+    .invoice-header,
+    .panel-header-strip {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+    }
+
+    .toolbar-box,
+    .control-form,
+    .filter-form {
+        width: 100%;
+        flex-direction: column;
+        align-items: stretch;
+        gap: 0.75rem;
+    }
+
+    /* A11y Touch Targets: Ensure inputs and buttons are easily tappable (Min 44px) */
+    select,
+    input[type="text"],
+    input[type="number"],
+    input[type="date"],
+    input[type="password"],
+    button,
+    .btn-action,
+    .date-input {
+        width: 100%;
+        min-height: 44px; 
+    }
+
+    /* Table fallback styling to ensure horizontal scroll is obvious */
+    .table-responsive-wrapper {
+        border-radius: 0.5rem;
+        border-right: none;
+        border-left: none;
+        box-shadow: none;
+        border-top: 1px solid var(--grid-border);
+        border-bottom: 1px solid var(--grid-border);
+    }
+}
+
+/* ==========================================================================
+   3. ACCESSIBILITY (A11y) PREFERENCES
+   ========================================================================== */
+@media (prefers-reduced-motion: reduce) {
+    * {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+    }
+}
+
+/* ==========================================================================
+   4. ENTERPRISE PRINT ENGINE (Ledgers, Bills, and Reports)
+   ========================================================================== */
+@media print {
+    /* Setup strict page parameters */
+    @page {
+        size: A4 portrait;
+        margin: 1.5cm;
+    }
+
+    /* Force background colors to print (e.g., status badges) */
+    * {
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+    }
+
+    body {
+        background: #ffffff;
+        color: #000000;
+        padding: 0;
+        margin: 0;
+        font-size: 11pt; /* Optimize typography for ink */
+    }
+
+    /* Strip away all UI elements unnecessary for a physical document */
+    aside,
+    header,
+    footer,
+    .navbar-top,
+    .action-bar,
+    .navigation-action-dock,
+    button,
+    .btn,
+    .btn-action,
+    .btn-back,
+    #student-toast-dock,
+    #student-form-loader,
+    .no-print {
+        display: none !important;
+    }
+
+    /* Expand containers to use full page width */
+    .invoice-card,
+    .wrapper,
+    .container,
+    .main-content-wrapper,
+    main {
+        width: 100% !important;
+        max-width: 100% !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        border: none !important;
+        box-shadow: none !important;
+        float: none !important;
+    }
+
+    /* Ensure tables don't awkwardly break halfway through a row */
+    table {
+        page-break-inside: auto;
+        width: 100%;
+        border-collapse: collapse;
+    }
+    
+    tr {
+        page-break-inside: avoid;
+        page-break-after: auto;
+    }
+    
+    thead {
+        display: table-header-group; /* Repeats table headers on new pages */
+    }
+    
+    tfoot {
+        display: table-footer-group;
+    }
+
+    /* Clean up table borders for print */
+    table.enterprise-datagrid th,
+    table.enterprise-datagrid td {
+        border: 1px solid #cbd5e1;
+        padding: 8px;
+    }
+
+    /* Un-scroll responsive wrappers */
+    .table-responsive-wrapper {
+        overflow: visible !important;
+        max-height: none !important;
+        border: none !important;
+    }
+}
