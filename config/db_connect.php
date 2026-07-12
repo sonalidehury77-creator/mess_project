@@ -14,15 +14,15 @@ if (basename($_SERVER['PHP_SELF']) === 'db_connect.php') {
 /* ==========================================================================
    1. CORE DATABASE ENVIRONMENT CONFIGURATION VARIABLES
    ========================================================================== */
-define('DB_HOST', '127.0.0.1'); 
+/*define('DB_HOST', '127.0.0.1'); 
 define('DB_USER', 'root'); 
 define('DB_PASS', ''); 
 define('DB_NAME', 'mess_system');
-/*
+*/
 define('DB_HOST', 'sql112.infinityfree.com');
 define('DB_USER', 'if0_42340314');
 define('DB_PASS', 'HostelMess54321');
-define('DB_NAME', 'if0_42340314_mess_system');*/
+define('DB_NAME', 'if0_42340314_mess_system');
 
 /* ==========================================================================
    2. SYSTEM SETTINGS & RUNTIME TIMEZONE MANAGEMENT
