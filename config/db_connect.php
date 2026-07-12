@@ -14,10 +14,15 @@ if (basename($_SERVER['PHP_SELF']) === 'db_connect.php') {
 /* ==========================================================================
    1. CORE DATABASE ENVIRONMENT CONFIGURATION VARIABLES
    ========================================================================== */
-define('DB_HOST', '127.0.0.1');
-define('DB_USER', 'root');
-define('DB_PASS', '');
+define('DB_HOST', '127.0.0.1'); 
+define('DB_USER', 'root'); 
+define('DB_PASS', ''); 
 define('DB_NAME', 'mess_system');
+/*
+define('DB_HOST', 'sql112.infinityfree.com');
+define('DB_USER', 'if0_42340314');
+define('DB_PASS', 'HostelMess54321');
+define('DB_NAME', 'if0_42340314_mess_system');*/
 
 /* ==========================================================================
    2. SYSTEM SETTINGS & RUNTIME TIMEZONE MANAGEMENT
@@ -39,25 +44,31 @@ define('PATH_DEFAULT_AVATAR', '../uploads/students/default.png');
    4. ESTABLISHING SECURE PDO RESOURCE TERMINAL
    ========================================================================== */
 try {
+
     $dsn = "mysql:host=" . DB_HOST . ";dbname=" . DB_NAME . ";charset=utf8mb4";
-    
+
     $options = [
-        PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION, // Throw readable execution exceptions
-        PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,       // Fetch column indexed arrays natively
-        PDO::ATTR_EMULATE_PREPARES   => false,                  // True database side statement analysis (Strict SQLi Block)
+        PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
+        PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+        PDO::ATTR_EMULATE_PREPARES   => false,
         PDO::MYSQL_ATTR_INIT_COMMAND => "SET NAMES utf8mb4 COLLATE utf8mb4_unicode_ci"
     ];
 
-    // Instantiate dynamic connection state resource reference 
     $pdo = new PDO($dsn, DB_USER, DB_PASS, $options);
-    
-    // Explicitly sync storage server runtime clocks to matching IST offset
+
     $pdo->exec("SET time_zone = '+05:30'");
 
 } catch (PDOException $e) {
-    error_log("Critical DB Connection Fault Instance Triggered: " . $e->getMessage());
-    http_response_code(500);
-    die("❌ <b>System Failure:</b> Unable to connect securely to the database engine. Please try again later.");
+
+    error_log("Database Connection Error : " . $e->getMessage());
+
+    die("
+    <h2 style='font-family:Arial;color:red'>
+        Database Connection Failed
+    </h2>
+    <p>Please contact administrator.</p>
+    ");
+
 }
 
 /* ==========================================================================

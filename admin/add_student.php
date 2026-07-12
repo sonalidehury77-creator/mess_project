@@ -441,13 +441,13 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
                 <div class="form-group">
                     <label for="name">Full Name</label>
-                    <input type="text" id="name" name="name" placeholder="John Doe" value="<?php echo isset($_POST['name']) ? htmlspecialchars($_POST['name']) : ''; ?>" required>
+                    <input type="text" id="name" name="name" placeholder="Sonali Dehury" value="<?php echo isset($_POST['name']) ? htmlspecialchars($_POST['name']) : ''; ?>" required>
                 </div>
 
                 <div class="row">
                     <div class="form-group">
                         <label for="class">Class / Year</label>
-                        <input type="text" id="class" name="class" placeholder="B.Tech 3rd Year" value="<?php echo isset($_POST['class']) ? htmlspecialchars($_POST['class']) : ''; ?>" required>
+                        <input type="text" id="class" name="class" placeholder="B.SC 2nd Year" value="<?php echo isset($_POST['class']) ? htmlspecialchars($_POST['class']) : ''; ?>" required>
                     </div>
                     <div class="form-group">
                         <label for="department">Academic Department</label>
@@ -457,12 +457,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
                 <div class="form-group">
                     <label for="university_roll">University Roll Number</label>
-                    <input type="text" id="university_roll" name="university_roll" placeholder="UNIV202688" value="<?php echo isset($_POST['university_roll']) ? htmlspecialchars($_POST['university_roll']) : ''; ?>" required>
+                    <input type="text" id="university_roll" name="university_roll" placeholder="24DCS042" value="<?php echo isset($_POST['university_roll']) ? htmlspecialchars($_POST['university_roll']) : ''; ?>" required>
                 </div>
 
                 <div class="form-group">
                     <label for="hostel_roll">Hostel Roll Number (Login ID)</label>
-                    <input type="text" id="hostel_roll" name="hostel_roll" placeholder="HSTL402" style="text-transform: uppercase;" value="<?php echo isset($_POST['hostel_roll']) ? htmlspecialchars($_POST['hostel_roll']) : ''; ?>" required>
+                    <input type="text" id="hostel_roll" name="hostel_roll" placeholder="415" style="text-transform: uppercase;" value="<?php echo isset($_POST['hostel_roll']) ? htmlspecialchars($_POST['hostel_roll']) : ''; ?>" required>
                 </div>
 
                 <div class="row">
@@ -472,14 +472,14 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     </div>
                     <div class="form-group">
                         <label for="email">Email Address</label>
-                        <input type="email" id="email" name="email" placeholder="student@university.edu" value="<?php echo isset($_POST['email']) ? htmlspecialchars($_POST['email']) : ''; ?>" required>
+                        <input type="email" id="email" name="email" placeholder="student@gmail.com" value="<?php echo isset($_POST['email']) ? htmlspecialchars($_POST['email']) : ''; ?>" required>
                     </div>
                 </div>
 
                 <div class="row">
                     <div class="form-group">
                         <label for="room_number">Allotted Room Number</label>
-                        <input type="text" id="room_number" name="room_number" placeholder="Block B-102" value="<?php echo isset($_POST['room_number']) ? htmlspecialchars($_POST['room_number']) : ''; ?>" required>
+                        <input type="text" id="room_number" name="room_number" placeholder="324" value="<?php echo isset($_POST['room_number']) ? htmlspecialchars($_POST['room_number']) : ''; ?>" required>
                     </div>
                     <div class="form-group">
                         <label for="password">Account Access Password</label>

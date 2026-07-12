@@ -170,7 +170,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                         type="password"
                         id="password"
                         name="password"
-                        placeholder="••••••••"
+                        placeholder="your password"
                         required
                         class="w-full pl-4 pr-12 py-3 border border-slate-200 rounded-xl text-sm font-medium focus:outline-none focus:border-slate-900 focus:ring-4 focus:ring-slate-100 transition-all">
                     <button type="button" id="toggleVisibility" onclick="togglePassword()" class="absolute right-4 top-1/2 -translate-y-1/2 text-lg select-none hover:opacity-70 focus:outline-none">👁️</button>

@@ -102,6 +102,8 @@ try {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Vacation & Leave Manager</title>
+    <!-- Favicon Integration linked into images folder -->
+    <link rel="icon" type="image/x-icon" href="../images/favicon.ico">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Playfair+Display:ital,wght@0,600;1,400&display=swap" rel="stylesheet">
@@ -417,6 +419,11 @@ try {
     <div class="wrapper">
 
         <div class="panel-box">
+            <!-- Included premium image asset wrapper 
+             <div style="width: 100%; height: 140px; border-radius: 12px; overflow: hidden; margin-bottom: 22px;">
+                <img src="../images/hostel.jpg" alt="Hostel Campus" style="width: 100%; height: 100%; object-fit: cover;">
+            </div>-->
+
             <h2>
                 <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5"></path></svg>
                 Apply for Mess Off
@@ -493,11 +500,11 @@ try {
                             <tr>
                                 <td>
                                     <span style="font-size: 14px; font-weight: 600; color: #0F172A;">
-                                        <?php echo date("d M", strokeToTime($leave['start_date'])); ?>
+                                        <?php echo date("d M", strtotime($leave['start_date'])); ?>
                                     </span> 
                                     <span style="color: #94A3B8; font-weight: 400; padding: 0 4px;">→</span> 
                                     <span style="font-size: 14px; font-weight: 600; color: #0F172A;">
-                                        <?php echo date("d M, Y", strokeToTime($leave['end_date'])); ?>
+                                        <?php echo date("d M, Y", strtotime($leave['end_date'])); ?>
                                     </span>
                                     
                                     <?php if(!empty($leave['reason'])): ?>

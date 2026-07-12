@@ -45,7 +45,7 @@ switch ($filter) {
 
 try {
     /* ==========================================================================
-       4. DATA AGGREGATION ENGINE
+       4. DATA AGGREGATION ENGINE (MEAL REVIEWS)
        ========================================================================== */
 
     // [Metric A]: Core Statistical Summaries
@@ -92,6 +92,20 @@ try {
     ");
     $comments_stmt->execute($bindings);
     $recent_reviews = $comments_stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    /* ==========================================================================
+       5. INDEX.PHP CONTACT TICKETS EXTRACTION LAYER
+       ========================================================================== */
+    $tickets_stmt = $conn->prepare("
+        SELECT name, hostel_roll, message, submitted_at 
+        FROM contact_tickets 
+        WHERE $where_clause
+        ORDER BY submitted_at DESC 
+        LIMIT 20
+    ");
+    $tickets_stmt->execute($bindings);
+    $contact_tickets = $tickets_stmt->fetchAll(PDO::FETCH_ASSOC);
+
 } catch (PDOException $e) {
     error_log("Analytics Engine Processing Failure: " . $e->getMessage());
     die("❌ Error compiling historical food review scores.");
@@ -125,7 +139,6 @@ try {
             margin: 0 auto;
         }
 
-        /* HEADER PANEL ASSEMBLY */
         .dashboard-header {
             background: #0F172A;
             border: 1px solid #334155;
@@ -151,7 +164,6 @@ try {
             font-weight: 500;
         }
 
-        /* FILTER BAR STRIP */
         .toolbar-strip {
             background: #FFFFFF;
             border-left: 1px solid #CBD5E1;
@@ -192,7 +204,6 @@ try {
             border-color: #2563EB;
         }
 
-        /* BODY CONTAINER INTERIOR PANEL */
         .workspace-body {
             background: #FFFFFF;
             border-left: 1px solid #CBD5E1;
@@ -203,7 +214,6 @@ try {
             box-shadow: 0 10px 15px -3px rgba(15, 23, 42, 0.04);
         }
 
-        /* EXECUTIVE SUMMARY CARDS */
         .metrics-bento-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
@@ -244,14 +254,6 @@ try {
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
         }
 
-        .bento-card.accent-amber .badge-icon {
-            border-color: #FCD34D;
-        }
-
-        .bento-card.accent-emerald .badge-icon {
-            border-color: #86EFAC;
-        }
-
         .meta-stack {
             display: flex;
             flex-direction: column;
@@ -273,11 +275,11 @@ try {
             line-height: 1.1;
         }
 
-        /* SPLIT VIEW SYSTEM */
         .analytics-split-view {
             display: grid;
             grid-template-columns: 1.2fr 1fr;
             gap: 28px;
+            margin-bottom: 36px;
         }
 
         @media (max-width: 900px) {
@@ -304,7 +306,6 @@ try {
             padding-bottom: 12px;
         }
 
-        /* REVIEWS TIMELINE SYSTEM */
         .stream-wrapper {
             display: flex;
             flex-direction: column;
@@ -376,7 +377,43 @@ try {
             text-align: right;
         }
 
-        /* NAVIGATION BAR */
+        /* CONTACT TICKETS STYLING ADDITIONS */
+        .ticket-card {
+            background: #F8FAFC;
+            border-left: 4px solid #0F172A;
+            border-top: 1px solid #E2E8F0;
+            border-right: 1px solid #E2E8F0;
+            border-bottom: 1px solid #E2E8F0;
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 12px;
+        }
+        .ticket-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 8px;
+        }
+        .ticket-user-info h4 {
+            font-size: 14px;
+            font-weight: 700;
+            color: #0F172A;
+        }
+        .ticket-user-info span {
+            font-size: 11px;
+            color: #64748B;
+            font-weight: 600;
+        }
+        .ticket-message {
+            font-size: 13px;
+            color: #334155;
+            background: #FFFFFF;
+            padding: 10px 14px;
+            border: 1px solid #E2E8F0;
+            border-radius: 6px;
+            line-height: 1.5;
+        }
+
         .navigation-action-dock {
             text-align: center;
             margin-top: 32px;
@@ -481,7 +518,7 @@ try {
                                         <span class="score-star-badge">★ <?php echo number_format($review['rating'], 0); ?></span>
                                     </div>
                                     <div class="node-text-body">
-                                        "${review['comment']}"
+                                        "<?php echo htmlspecialchars($review['comment']); ?>"
                                     </div>
                                     <div class="node-timestamp-bottom">
                                         Logged: <?php echo date("d M, h:i A", strtotime($review['submitted_at'])); ?>
@@ -492,6 +529,37 @@ try {
                     </div>
                 </div>
 
+            </div>
+
+            <!-- ==========================================================================
+               🆕 CENTRALIZED INQUIRIES & CONTACT TICKETS WORKSPACE
+               ========================================================================== -->
+            <div class="content-block-panel" style="margin-top: 12px;">
+                <h3 style="color: #1E3A8A; border-bottom: 1px solid #DBE3ED;">✉️ Submitted Help Desk Tickets & Inquiries (From Index Page)</h3>
+                <div style="max-height: 400px; overflow-y: auto; padding-right: 4px; margin-top: 15px;">
+                    <?php if (empty($contact_tickets)): ?>
+                        <p style="color: #94A3B8; font-size: 13px; text-align: center; padding: 40px 0;">
+                            📭 No contact inquiries or message tickets submitted during this window.
+                        </p>
+                    <?php else: ?>
+                        <?php foreach ($contact_tickets as $ticket): ?>
+                            <div class="ticket-card">
+                                <div class="ticket-header">
+                                    <div class="ticket-user-info">
+                                        <h4><?php echo htmlspecialchars($ticket['name']); ?></h4>
+                                        <span>Roll No: <b style="color: #0F172A; font-family: monospace;"><?php echo htmlspecialchars($ticket['hostel_roll']); ?></b></span>
+                                    </div>
+                                    <div class="node-timestamp-bottom">
+                                        Sent: <?php echo date("d M Y, h:i A", strtotime($ticket['submitted_at'])); ?>
+                                    </div>
+                                </div>
+                                <div class="ticket-message">
+                                    <?php echo nl2br(htmlspecialchars($ticket['message'])); ?>
+                                </div>
+                            </div>
+                        <?php endforeach; ?>
+                    <?php endif; ?>
+                </div>
             </div>
 
         </div>
@@ -589,5 +657,4 @@ try {
     <?php endif; ?>
 
 </body>
-
 </html>

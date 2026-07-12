@@ -655,6 +655,11 @@ if (!empty($user['photo'])) {
                     <h3>Mess Leave Manager</h3>
                     <p>File leave itineraries or freeze meal accounts to systematically deduct fee costs during vacations.</p>
                 </a>
+                <a href="weekly_menu.php" class="action-card violet">
+                    <div class="action-icon-circle">📅</div>
+                    <h3>Weekly Menu Matrix</h3>
+                    <p>Examine the full weekly programmatic dietary timeline to plan your campus meals in advance.</p>
+                </a>
             </div>
 
             <h3 class="hub-section-title">📊 Ledgers & Performance Insights</h3>

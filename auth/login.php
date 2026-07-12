@@ -157,7 +157,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                     type="text"
                     id="hostel_roll"
                     name="hostel_roll"
-                    placeholder="e.g., H-102"
+                    placeholder="e.g., 415"
                     value="<?php echo isset($_POST['hostel_roll']) ? htmlspecialchars($_POST['hostel_roll']) : ''; ?>"
                     required
                     maxlength="20"
@@ -172,7 +172,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                         type="password"
                         id="password"
                         name="password"
-                        placeholder="••••••••"
+                        placeholder="your password"
                         required
                         maxlength="50"
                         class="w-full pl-4 pr-12 py-3 border border-slate-200 rounded-xl text-sm font-medium focus:outline-none focus:border-indigo-600 focus:ring-4 focus:ring-indigo-50">
