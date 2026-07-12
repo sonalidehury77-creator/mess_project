@@ -421,6 +421,56 @@ if ($isExpired && !$isLocked) {
             box-shadow: none;
             opacity: 0.6;
         }
+
+        /* ==========================================================================
+           MOBILE RESPONSIVENESS (Responsive Overrides)
+           ========================================================================== */
+        @media (max-width: 767px) {
+            body {
+                padding: 16px 12px;
+            }
+
+            .container {
+                padding: 20px;
+                border-radius: 20px;
+            }
+
+            .header-navigation {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 16px;
+                margin-bottom: 24px;
+            }
+
+            .menu-btn {
+                width: 100%;
+                text-align: center;
+                padding: 12px;
+            }
+
+            .welcome-box h2 {
+                font-size: 18px;
+            }
+
+            .summary-grid {
+                grid-template-columns: 1fr;
+                gap: 12px;
+            }
+
+            .display-card, 
+            .selection-form-card {
+                padding: 16px;
+            }
+
+            h3 {
+                font-size: 16px;
+            }
+
+            .btn-submit-save {
+                padding: 16px;
+                font-size: 15px;
+            }
+        }
     </style>
 
     <script>

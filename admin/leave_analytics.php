@@ -400,6 +400,126 @@ try {
             padding: 48px 0;
             font-size: 13px;
         }
+
+        /* ==========================================================================
+           MOBILE RESPONSIVE EXTENSION MODULE (Laptop Design Preserved)
+           ========================================================================== */
+        @media (max-width: 768px) {
+            body {
+                padding: 16px 12px;
+            }
+
+            .workspace-panel {
+                padding: 16px;
+                border-radius: 12px;
+            }
+
+            .panel-header-strip {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 12px;
+                padding-bottom: 12px;
+            }
+
+            .panel-header-strip h2 {
+                font-size: 16px;
+            }
+
+            .filter-dock {
+                width: 100%;
+                display: flex;
+                overflow-x: auto;
+                scrollbar-width: none; /* Hide scrollbar for clean app interface appearance */
+            }
+            .filter-dock::-webkit-scrollbar {
+                display: none;
+            }
+
+            .filter-btn {
+                flex: 1;
+                text-align: center;
+                padding: 8px 10px;
+                font-size: 11px;
+                white-space: nowrap;
+            }
+
+            /* Unroll tables into standard card views for natural mobile viewport navigation */
+            table, thead, tbody, th, td, tr {
+                display: block;
+                width: 100%;
+            }
+
+            thead {
+                display: none; /* Hide header rows safely on mobile view styles */
+            }
+
+            tr {
+                background: #F8FAFC;
+                border: 1px solid #E2E8F0;
+                border-radius: 12px;
+                margin-bottom: 14px;
+                padding: 14px;
+                box-shadow: 0 1px 3px rgba(0,0,0,0.01);
+            }
+
+            td {
+                padding: 6px 0 !important;
+                border-bottom: none !important;
+                text-align: left !important;
+            }
+
+            /* Prepend contextual identifier metadata tags dynamically */
+            td:nth-of-type(1)::before {
+                content: "STUDENT ROLL";
+                display: block;
+                font-size: 10px;
+                font-weight: 700;
+                color: #94A3B8;
+                margin-bottom: 2px;
+            }
+
+            td:nth-of-type(2)::before {
+                content: "TIMELINE & REASON";
+                display: block;
+                font-size: 10px;
+                font-weight: 700;
+                color: #94A3B8;
+                margin-bottom: 2px;
+            }
+
+            td:nth-of-type(3) {
+                display: inline-block;
+                width: auto;
+                margin-top: 4px;
+            }
+
+            td:nth-of-type(4) {
+                border-t: 1px solid #E2E8F0 !important;
+                margin-top: 10px;
+                padding-top: 12px !important;
+                width: 100%;
+            }
+
+            .action-button-group {
+                justify-content: flex-start !important;
+                width: 100%;
+            }
+
+            .inline-action-form {
+                flex: 1;
+            }
+
+            .btn-control {
+                width: 100%;
+                padding: 10px;
+                text-align: center;
+                font-size: 13px;
+            }
+            
+            .empty-indicator {
+                padding: 32px 0;
+            }
+        }
     </style>
 </head>
 

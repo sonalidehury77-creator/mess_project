@@ -1,144 +1,176 @@
 <?php
 /**
- * 📲 Hostel Management System - OTP Validation Engine
- * Features: Chronological Expiry Control, Multi-Step Verification Checks
+ * 🔒 auth/verify_otp.php
+ * 
+ * One-Time Password Validation Interface with Security Brute-Force Safeguards
  */
+
+header("X-Content-Type-Options: nosniff");
+header("X-Frame-Options: DENY");
+header("X-XSS-Protection: 1; mode=block");
 
 if (session_status() === PHP_SESSION_NONE) {
     session_start([
         'cookie_httponly' => true,
         'cookie_secure'   => isset($_SERVER['HTTPS']),
         'use_strict_mode' => true,
-        'cookie_samesite' => 'Strict'
     ]);
 }
 
-require_once __DIR__ . "/../config/db_connect.php";
-
-// Enforce structured workflow; direct hits are pushed out immediately
 if (!isset($_SESSION['reset_student_id']) || !isset($_SESSION['reset_hostel_roll'])) {
     header("Location: forgot_password.php");
     exit();
 }
 
+// 1. DATABASE ROUTING CONNECTOR
+require_once __DIR__ . '/../config/db_connect.php'; 
+
 if (empty($_SESSION['csrf_token'])) {
     $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
 }
 
-$error = "";
+if (!isset($_SESSION['otp_attempts'])) {
+    $_SESSION['otp_attempts'] = 0;
+}
 
-if ($_SERVER["REQUEST_METHOD"] === "POST") {
+$error_message = '';
+$is_expired     = false;
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (!isset($_POST['csrf_token']) || !hash_equals($_SESSION['csrf_token'], $_POST['csrf_token'])) {
-        http_response_code(403);
-        die("Security Mismatch Failure.");
-    }
+        $error_message = 'Security token footprint manipulation detected.';
+    } else {
+        $submitted_otp = '';
+        if (isset($_POST['otp']) && is_array($_POST['otp'])) {
+            foreach ($_POST['otp'] as $digit) {
+                $submitted_otp .= filter_var($digit, FILTER_SANITIZE_NUMBER_INT);
+            }
+        }
 
-    $input_otp = trim($_POST['otp'] ?? '');
+        if (strlen($submitted_otp) !== 6) {
+            $error_message = 'Provide a complete 6-digit verification code token.';
+        } elseif ($_SESSION['otp_attempts'] >= 5) {
+            $error_message = 'Too many failed verification logs. Request a fresh OTP token.';
+            $is_expired = true;
+        } else {
+            try {
+                $stmt = $pdo->prepare("SELECT reset_otp, otp_expiry FROM student WHERE id = :id LIMIT 1");
+                $stmt->execute([':id' => $_SESSION['reset_student_id']]);
+                $student = $stmt->fetch(PDO::FETCH_ASSOC);
 
-    if (!empty($input_otp)) {
-        try {
-            // Fetch OTP parameters straight from the storage rows
-            $stmt = $pdo->prepare("SELECT reset_otp, otp_expiry FROM student WHERE id = :id LIMIT 1");
-            $stmt->execute(['id' => $_SESSION['reset_student_id']]);
-            $student = $stmt->fetch(PDO::FETCH_ASSOC);
-
-            if ($student && !empty($student['reset_otp'])) {
-                $current_time = time();
-                $expiry_time  = strtotime($student['otp_expiry']);
-
-                // Evaluate whether the verification window timing thresholds are clean
-                if ($current_time > $expiry_time) {
-                    $error = "❌ This OTP has expired. Please request a new verification code link.";
+                if (!$student) {
+                    $error_message = 'Session reference mismatch error occurred.';
                 } else {
-                    // Direct balance evaluation matching checks
-                    if (hash_equals($student['reset_otp'], $input_otp)) {
+                    $current_time = time();
+                    $expiry_time  = strtotime($student['otp_expiry']);
+
+                    if ($current_time > $expiry_time) {
+                        $error_message = 'The validation window has expired (10-minute limit exceeded).';
+                        $is_expired = true;
+                    } elseif (!hash_equals($student['reset_otp'], $submitted_otp)) {
+                        $_SESSION['otp_attempts']++;
+                        $remaining = 5 - $_SESSION['otp_attempts'];
                         
-                        // Set state flags confirming authorization for step 3
+                        if ($remaining <= 0) {
+                            $error_message = 'Maximum attempts exhausted. Re-initialize validation routing.';
+                            $is_expired = true;
+                        } else {
+                            $error_message = "Invalid verification code sequence. {$remaining} attempts remaining.";
+                        }
+                    } else {
                         $_SESSION['otp_verified'] = true;
-                        
                         header("Location: reset_password.php");
                         exit();
-                    } else {
-                        $error = "❌ Incorrect OTP Code. Please verify the code sent to your phone.";
                     }
                 }
-            } else {
-                $error = "❌ Session invalid. Please initiate the pass recovery flow again.";
+            } catch (PDOException $e) {
+                error_log("Database verification validation error: " . $e->getMessage());
+                $error_message = 'Internal framework error occurred.';
             }
-        } catch (PDOException $e) {
-            error_log("OTP Verification Pipeline Issue: " . $e->getMessage());
-            $error = "⚠️ Critical backend infrastructure fault validating key logs.";
         }
-    } else {
-        $error = "❌ Please input the 6-digit code sequence.";
     }
 }
 ?>
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="h-full bg-slate-50">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Verify OTP Code - Portal</title>
+    <title>Token Verification | Campus Dining</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <style>body { font-family: 'Inter', sans-serif; }</style>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+        tailwind.config = { theme: { extend: { fontFamily: { sans: ['Poppins', 'sans-serif'] }, colors: { univ: { 900: '#1e3a8a', 800: '#1e40af', 50: '#f0f4f8' } } } } }
+    </script>
 </head>
-<body class="bg-slate-50 min-h-screen flex flex-col justify-center items-center p-6 antialiased">
-
-    <div class="w-full max-w-md bg-white border border-slate-200 p-8 rounded-3xl shadow-xl shadow-slate-200/50">
-        
-        <div class="flex flex-col items-center text-center mb-8">
-            <div class="bg-teal-50 text-teal-600 w-12 h-12 flex items-center justify-center rounded-2xl font-bold text-xl mb-4">
-                💬
-            </div>
-            <h2 class="text-2xl font-bold text-slate-900 tracking-tight">Enter OTP Code</h2>
-            <p class="text-xs text-slate-500 font-medium mt-1">Provide the 6-digit authorization code received on your phone.</p>
-            <div class="mt-2 text-xs font-semibold text-indigo-600 bg-indigo-50 px-3 py-1 rounded-full">
-                Account ID: <?php echo htmlspecialchars($_SESSION['reset_hostel_roll']); ?>
-            </div>
+<body class="h-full flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 antialiased">
+    <div class="max-w-md w-full space-y-8 bg-white p-8 rounded-2xl border border-slate-200/80 shadow-xl relative overflow-hidden">
+        <div class="absolute inset-0 opacity-5 pointer-events-none bg-[radial-gradient(#1e3a8a_1px,transparent_0)] [background-size:16px_16px]"></div>
+        <div class="relative z-10 text-center">
+            <div class="mx-auto h-12 w-12 bg-univ-50 text-univ-900 rounded-xl flex items-center justify-center text-xl shadow-sm"><i class="fa-solid fa-key"></i></div>
+            <h2 class="mt-4 text-xl font-extrabold tracking-tight text-univ-900 uppercase">Verify Secure OTP</h2>
+            <p class="mt-1.5 text-xs text-slate-500 font-light">An OTP has been dispatched to your mailbox.</p>
         </div>
 
-        <form method="POST" autocomplete="off" id="otpForm" class="space-y-5">
-            <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($_SESSION['csrf_token']); ?>">
-            
-            <div class="space-y-1.5">
-                <label for="otp" class="text-xs font-bold text-slate-700 uppercase tracking-wider text-center block">6-Digit Verification Code</label>
-                <input 
-                    type="text" 
-                    id="otp"
-                    name="otp" 
-                    maxlength="6"
-                    placeholder="Enter Code" 
-                    required 
-                    oninput="this.value = this.value.replace(/[^0-9]/g,'')"
-                    class="w-full text-center px-4 py-3.5 tracking-[0.5em] text-lg font-bold border border-slate-200 rounded-xl focus:outline-none focus:border-indigo-600 focus:ring-4 focus:ring-indigo-50"
-                >
-            </div>
-
-            <button type="submit" id="submitBtn" class="w-full bg-slate-900 hover:bg-indigo-600 text-white font-semibold text-sm py-3.5 rounded-xl transition-all duration-200 shadow-md">
-                Verify OTP Sequence
-            </button>
-        </form>
-
-        <?php if (!empty($error)): ?>
-            <div class="bg-rose-50 border border-rose-100 text-rose-800 text-xs font-semibold p-3.5 rounded-xl mt-5 text-center">
-                <?php echo $error; ?>
+        <?php if (!empty($error_message)): ?>
+            <div class="bg-red-50 border border-red-200/60 rounded-xl p-4 flex gap-3 text-xs text-red-700 relative z-10">
+                <i class="fa-solid fa-triangle-exclamation text-base text-red-500 shrink-0 mt-0.5"></i>
+                <p class="font-medium leading-relaxed"><?= htmlspecialchars($error_message, ENT_QUOTES, 'UTF-8'); ?></p>
             </div>
         <?php endif; ?>
 
-        <div class="mt-8 pt-5 border-t border-slate-100 text-center text-xs font-medium text-slate-500">
-            Did not receive any text code? <a href="forgot_password.php" class="text-indigo-600 font-semibold hover:underline">Resend New Request</a>
-        </div>
+        <?php if ($is_expired || $_SESSION['otp_attempts'] >= 5): ?>
+            <div class="text-center pt-2 relative z-10 space-y-4">
+                <a href="resend_otp.php" class="w-full inline-flex justify-center items-center py-3 px-4 text-xs font-bold uppercase tracking-wider rounded-xl text-white bg-univ-900 hover:bg-univ-800 shadow-md transition-all">
+                    <i class="fa-solid fa-rotate-right mr-2"></i> Resend Verification OTP
+                </a>
+            </div>
+        <?php else: ?>
+            <form id="otpForm" class="mt-6 space-y-6 relative z-10" action="" method="POST" autocomplete="off">
+                <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($_SESSION['csrf_token'], ENT_QUOTES, 'UTF-8'); ?>">
+                <div class="flex justify-between items-center gap-2" id="otpContainer">
+                    <?php for ($i = 0; $i < 6; $i++): ?>
+                        <input type="text" name="otp[]" maxlength="1" data-index="<?= $i; ?>" class="otp-box w-12 h-14 border border-slate-300 rounded-xl text-center text-xl font-bold font-mono text-univ-900 bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-univ-900 focus:border-univ-900 transition-all" <?= $i === 0 ? 'autofocus' : ''; ?> pattern="\d*">
+                    <?php endfor; ?>
+                </div>
+                <div>
+                    <button type="submit" class="w-full flex justify-center py-3 px-4 text-xs font-bold uppercase tracking-wider rounded-xl text-white bg-univ-900 hover:bg-univ-800 shadow-md transition-all">Authorize Token</button>
+                </div>
+            </form>
+        <?php endif; ?>
     </div>
 
+    <?php if (!$is_expired && $_SESSION['otp_attempts'] < 5): ?>
     <script>
-        document.getElementById("otpForm").addEventListener("submit", function() {
-            const btn = document.getElementById("submitBtn");
-            btn.disabled = true;
-            btn.className = "w-full bg-slate-400 text-white font-semibold text-sm py-3.5 rounded-xl cursor-not-allowed text-center animate-pulse";
-            btn.innerHTML = "Authenticating Code String...";
+        document.addEventListener('DOMContentLoaded', () => {
+            const boxes = document.querySelectorAll('.otp-box');
+            if(boxes[0]) boxes[0].focus();
+            boxes.forEach((box, idx) => {
+                box.addEventListener('input', (e) => {
+                    e.target.value = e.target.value.replace(/[^0-9]/g, '');
+                    if (e.target.value.length > 0 && idx < boxes.length - 1) boxes[idx + 1].focus();
+                });
+                box.addEventListener('keydown', (e) => {
+                    if (e.key === 'Backspace' && !e.target.value && idx > 0) boxes[idx - 1].focus();
+                });
+                box.addEventListener('paste', (e) => {
+                    e.preventDefault();
+                    const clipboardData = (e.clipboardData || window.clipboardData).getData('text');
+                    const numerals = clipboardData.replace(/[^0-9]/g, '').substring(0, 6);
+                    if (numerals.length > 0) {
+                        const splitDigits = numerals.split('');
+                        boxes.forEach((targetBox, targetIdx) => {
+                            if (splitDigits[targetIdx]) targetBox.value = splitDigits[targetIdx];
+                        });
+                        boxes[Math.min(splitDigits.length, boxes.length - 1)].focus();
+                    }
+                });
+            });
         });
     </script>
+    <?php endif; ?>
 </body>
 </html>

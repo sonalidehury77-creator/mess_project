@@ -24,6 +24,7 @@ define('DB_USER', 'if0_42340314');
 define('DB_PASS', 'HostelMess54321');
 define('DB_NAME', 'if0_42340314_mess_system');
 
+
 /* ==========================================================================
    2. SYSTEM SETTINGS & RUNTIME TIMEZONE MANAGEMENT
    ========================================================================== */

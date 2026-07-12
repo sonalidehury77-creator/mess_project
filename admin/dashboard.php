@@ -86,6 +86,10 @@ $display_date_string = date("l, d M Y");
             align-items: center;
             text-align: center;
             box-shadow: 4px 0 24px rgba(15, 23, 42, 0.01);
+            position: sticky;
+            top: 0;
+            height: 100vh;
+            overflow-y: auto;
         }
 
         .profile-avatar-wrapper {
@@ -101,6 +105,7 @@ $display_date_string = date("l, d M Y");
             align-items: center;
             justify-content: center;
             font-size: 44px;
+            flex-shrink: 0;
         }
 
         .sidebar-profile h2 {
@@ -127,7 +132,7 @@ $display_date_string = date("l, d M Y");
             border: 1px solid #E2E8F0;
             border-radius: 12px;
             padding: 16px;
-            margin-bottom: auto;
+            margin-bottom: 24px;
         }
 
         .profile-detail-row {
@@ -152,9 +157,57 @@ $display_date_string = date("l, d M Y");
             font-weight: 600;
         }
 
+        /* STRATEGIC ADMIN NOTICES SPACE COVER */
+        .sidebar-instructions-container {
+            width: 100%;
+            text-align: left;
+            background: #FFFBEB;
+            border: 1px solid #FDE68A;
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: auto;
+        }
+
+        .sidebar-instructions-container h4 {
+            font-size: 13px;
+            color: #92400E;
+            font-weight: 700;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .sidebar-instructions-container ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .sidebar-instructions-container li {
+            font-size: 11px;
+            color: #78350F;
+            line-height: 1.5;
+            margin-bottom: 8px;
+            position: relative;
+            padding-left: 12px;
+        }
+
+        .sidebar-instructions-container li::before {
+            content: "•";
+            position: absolute;
+            left: 0;
+            color: #D97706;
+            font-weight: bold;
+        }
+
+        .sidebar-instructions-container li:last-child {
+            margin-bottom: 0;
+        }
+
         .btn-logout {
             width: 100%;
-            margin-top: 40px;
+            margin-top: 24px;
             padding: 12px;
             background: #FEF2F2;
             color: #EF4444;
@@ -165,6 +218,7 @@ $display_date_string = date("l, d M Y");
             border-radius: 8px;
             transition: all 0.2s;
             text-align: center;
+            flex-shrink: 0;
         }
 
         .btn-logout:hover {
@@ -177,6 +231,7 @@ $display_date_string = date("l, d M Y");
             padding: 40px;
             max-width: 1240px;
             width: 100%;
+            justify-self: center;
         }
 
         .meta-header-bar {
@@ -207,7 +262,7 @@ $display_date_string = date("l, d M Y");
         /* METRICS SUMMARY ROW */
         .metrics-summary-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
             gap: 20px;
             margin-bottom: 32px;
         }
@@ -230,19 +285,21 @@ $display_date_string = date("l, d M Y");
             align-items: center;
             justify-content: center;
             font-size: 22px;
+            flex-shrink: 0;
         }
 
         .metric-card h4 {
             font-size: 11px;
             color: #64748B;
             text-transform: uppercase;
-            tracking-content: 0.05em;
+            letter-spacing: 0.05em;
         }
 
         .metric-card p {
             font-size: 22px;
             font-weight: 800;
             color: #0F172A;
+            margin-top: 2px;
         }
 
         /* INTERACTIVE LINK CARDS HUB */
@@ -282,6 +339,7 @@ $display_date_string = date("l, d M Y");
             justify-content: center;
             font-size: 20px;
             transition: all 0.2s;
+            flex-shrink: 0;
         }
 
         .action-card:hover .action-icon-circle {
@@ -318,6 +376,10 @@ $display_date_string = date("l, d M Y");
             color: #3B82F6 !important;
         }
 
+        .double-width {
+            grid-column: span 2;
+        }
+
         /* ADVICE DESK LAYOUT */
         .help-box {
             background: #FFFFFF;
@@ -346,6 +408,52 @@ $display_date_string = date("l, d M Y");
         .help-item:last-child {
             margin-bottom: 0;
         }
+
+        /* ==========================================================================
+           RESPONSIVE MOBILE BREAKPOINTS MEDIA QUERY
+           ========================================================================== */
+        @media (max-width: 992px) {
+            .dashboard-layout {
+                grid-template-columns: 1fr;
+            }
+
+            .sidebar-profile {
+                height: auto;
+                position: relative;
+                border-right: none;
+                border-bottom: 1px solid #E2E8F0;
+                padding: 32px 20px 24px 20px;
+            }
+
+            .sidebar-instructions-container {
+                margin-bottom: 16px;
+            }
+
+            .workspace {
+                padding: 24px 16px;
+            }
+
+            .double-width {
+                grid-column: span 1;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .meta-header-bar {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 8px;
+                padding: 14px 16px;
+            }
+            
+            .metrics-summary-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .navigation-cards-grid {
+                grid-template-columns: 1fr;
+            }
+        }
     </style>
 </head>
 
@@ -370,6 +478,16 @@ $display_date_string = date("l, d M Y");
                     <span class="lbl">System Status</span>
                     <span class="val" style="color: #10B981;">Online</span>
                 </div>
+            </div>
+
+            <!-- Important Instructions Covering Empty Space -->
+            <div class="sidebar-instructions-container">
+                <h4>🛡️ Compliance Protocols</h4>
+                <ul>
+                    <li>Cross-check active dining headcount variables prior to certifying automated batch transactions.</li>
+                    <li>Always commit systematic log exits when leaving physical checkout terminals unattended.</li>
+                    <li>Audit incoming database server connection reports weekly for system monitoring optimization.</li>
+                </ul>
             </div>
 
             <a href="logout.php" class="btn-logout">🚪 Log Out Portal</a>
@@ -467,7 +585,7 @@ $display_date_string = date("l, d M Y");
                     <p>Broadcast alerts, reminders, and news to the student notice boards.</p>
                 </a>
 
-                <a href="bill.php" class="action-card" style="grid-column: span 2;">
+                <a href="bill.php" class="action-card double-width">
                     <div class="action-icon-circle">💵</div>
                     <h3>Mess Fee Billing & Records</h3>
                     <p>Calculate dynamic expenses, process due balances, and update monthly payment ledgers.</p>

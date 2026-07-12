@@ -169,7 +169,7 @@ if (!empty($user['photo'])) {
             font-family: 'Inter', 'Segoe UI', -apple-system, sans-serif;
         }
 
-        body {
+       body {
             background: #F8FAFC;
             color: #1E293B;
             min-height: 100vh;
@@ -193,6 +193,7 @@ if (!empty($user['photo'])) {
             position: sticky;
             top: 0;
             height: 100vh;
+            z-index: 50;
         }
 
         .profile-avatar-wrapper {
@@ -214,7 +215,6 @@ if (!empty($user['photo'])) {
             border-color: #3B82F6;
         }
 
-        /* ADD THIS: Handles the smooth scaling when clicked */
         .profile-avatar-wrapper.zoomed-view {
             transform: scale(2.2) translateY(20px);
             border-radius: 12px;
@@ -550,6 +550,35 @@ if (!empty($user['photo'])) {
         .notice-attachment-btn:hover {
             background: #E2E8F0;
             color: #0F172A;
+        }
+
+        /* ==========================================================================
+           ADDITION: EXCLUSIVE MOBILE ADAPTATION CORE LAYER
+           ========================================================================== */
+        @media (max-width: 991px) {
+            .dashboard-layout {
+                grid-template-columns: 1fr;
+            }
+            .sidebar-profile {
+                height: auto;
+                position: relative;
+                border-right: none;
+                border-bottom: 1px solid #E2E8F0;
+                padding: 30px 20px;
+            }
+            .btn-logout {
+                margin-top: 24px;
+            }
+            .workspace {
+                padding: 24px 16px;
+            }
+            .special-meal-grid {
+                grid-template-columns: 1fr;
+                gap: 16px;
+            }
+            .profile-avatar-wrapper.zoomed-view {
+                transform: scale(1.6) translateY(25px);
+            }
         }
     </style>
 </head>

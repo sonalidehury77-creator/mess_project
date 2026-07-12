@@ -125,6 +125,67 @@ $special_meals = $sp_stmt ? $sp_stmt->fetchAll(PDO::FETCH_ASSOC) : [];
         .special-table th { background: #FFF7ED; color: #C2410C; border-bottom: 1px solid #FED7AA; }
         .special-table td { border-bottom: 1px solid #FED7AA; }
 
+        /* 📱 RESPONSIVE MOBILE OVERRIDES (Does not affect laptop view) */
+        @media screen and (max-width: 768px) {
+            body { padding: 16px 8px; }
+            .container { padding: 20px 16px; border-radius: 12px; }
+            
+            .header-wrapper { flex-direction: column; align-items: flex-start; gap: 14px; margin-bottom: 20px; }
+            #searchBox { width: 100%; }
+
+            /* Flatten the main table layout into cards */
+            table, thead, tbody, th, td, tr { display: block; width: 100% !important; }
+            thead { display: none; } /* Hide headers on mobile */
+            
+            .menu-table-body tr { 
+                margin-bottom: 24px; 
+                border: 1px solid #E2E8F0; 
+                border-radius: 12px; 
+                overflow: hidden; 
+                background: #FFFFFF;
+                box-shadow: 0 2px 8px rgba(0,0,0,0.02);
+            }
+            
+            .menu-table-body td { 
+                padding: 14px 16px; 
+                border-bottom: 1px dashed #E2E8F0; 
+            }
+            
+            .menu-table-body td:first-child { 
+                background: #F8FAFC; 
+                border-bottom: 1px solid #E2E8F0;
+                padding: 12px 16px;
+            }
+            
+            .menu-table-body td:last-child { border-bottom: none; }
+
+            /* Visual text labels before values on mobile view */
+            .menu-table-body td:nth-child(2)::before { content: "🍳 Breakfast"; font-size: 11px; text-transform: uppercase; font-weight: 700; color: #64748B; display: block; margin-bottom: 6px; letter-spacing: 0.03em; }
+            .menu-table-body td:nth-child(3)::before { content: "☀️ Lunch Options"; font-size: 11px; text-transform: uppercase; font-weight: 700; color: #64748B; display: block; margin-bottom: 2px; letter-spacing: 0.03em; }
+            .menu-table-body td:nth-child(4)::before { content: "🌙 Dinner Options"; font-size: 11px; text-transform: uppercase; font-weight: 700; color: #64748B; display: block; margin-bottom: 2px; letter-spacing: 0.03em; }
+
+            /* Flatten the upcoming special feasts table into mobile cards */
+            .special-box { padding: 20px 14px; margin-top: 32px; }
+            .special-table { border: none; background: transparent; }
+            .special-table tr { 
+                background: #FFFFFF; 
+                border: 1px solid #FED7AA; 
+                border-radius: 12px; 
+                margin-bottom: 16px; 
+                padding: 4px 0;
+            }
+            .special-table td { padding: 12px 16px; border-bottom: 1px dashed #FFE4E6; }
+            .special-table td:first-child { border-bottom: 1px solid #FED7AA; background: #FFF7ED; }
+            .special-table td:last-child { border-bottom: none; }
+            
+            .special-table td:nth-child(2)::before { content: "☀️ Special Lunch"; font-size: 11px; text-transform: uppercase; font-weight: 700; color: #C2410C; display: block; margin-bottom: 4px; }
+            .special-table td:nth-child(3)::before { content: "🌙 Special Dinner"; font-size: 11px; text-transform: uppercase; font-weight: 700; color: #C2410C; display: block; margin-bottom: 4px; }
+
+            /* Adjust actions block at base */
+            .footer-actions { flex-direction: column-reverse; gap: 12px; margin-top: 24px; }
+            .btn { width: 100%; padding: 14px; }
+        }
+
         /* ACCESSIBLE SYSTEM PRINT RULES */
         @media print {
             body { background: white; padding: 0; color: #000; }

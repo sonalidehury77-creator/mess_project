@@ -289,10 +289,12 @@ $total_pages = ceil($total / $limit);
             border-color: #94A3B8;
         }
 
-        /* DATA TABLE MODULE */
+        /* ==========================================================================
+           DATA TABLE MODULE & RESPONSIVE DESIGN ARCHITECTURE
+           ========================================================================== */
         .table-responsive {
             width: 100%;
-            overflow-x: auto;
+            overflow-x: visible;
             border: 1px solid #E2E8F0;
             border-radius: 12px;
             margin-bottom: 24px;
@@ -378,6 +380,114 @@ $total_pages = ceil($total / $limit);
         .act-unblock {
             background: #DBEAFE;
             color: #1E40AF;
+        }
+
+        /* 📱 EXCLUSIVE MOBILE OPTIMIZATION LAYER */
+        @media screen and (max-width: 768px) {
+            body {
+                padding: 16px 8px;
+            }
+            
+            .container {
+                padding: 16px;
+                border-radius: 12px;
+            }
+
+            .table-responsive {
+                border: none;
+            }
+
+            /* Force table components to behave like stacked elements */
+            table, thead, tbody, th, td, tr { 
+                display: block; 
+            }
+            
+            /* Hide traditional table headers visually on mobile */
+            thead tr { 
+                position: absolute;
+                top: -9999px;
+                left: -9999px;
+            }
+            
+            tr { 
+                background: #FFFFFF;
+                border: 1px solid #E2E8F0; 
+                border-radius: 12px;
+                margin-bottom: 16px;
+                box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+                padding: 8px 0;
+            }
+
+            tr:hover td {
+                background: transparent;
+            }
+            
+            td { 
+                border: none;
+                border-bottom: 1px solid #F1F5F9; 
+                position: relative;
+                padding-left: 45%; 
+                text-align: right;
+                min-height: 48px;
+                display: flex;
+                align-items: center;
+                justify-content: flex-end;
+            }
+
+            td:last-child {
+                border-bottom: none;
+                justify-content: center;
+                padding-left: 16px;
+                text-align: center;
+                background: #F8FAFC;
+                margin-top: 8px;
+                padding-top: 12px;
+                padding-bottom: 12px;
+                border-radius: 0 0 11px 11px;
+            }
+            
+            /* Inject semantic column labels via pseudoelements */
+            td:before { 
+                position: absolute;
+                left: 16px;
+                width: 40%; 
+                padding-right: 10px; 
+                white-space: nowrap;
+                text-align: left;
+                font-weight: 700;
+                font-size: 11px;
+                color: #64748B;
+                text-transform: uppercase;
+                letter-spacing: 0.05em;
+            }
+
+            /* Do not label the avatar image row natively */
+            td:nth-of-type(1):before { content: ""; }
+            td:nth-of-type(2):before { content: "Student"; }
+            td:nth-of-type(3):before { content: "Roll No."; }
+            td:nth-of-type(4):before { content: "Room No."; }
+            td:nth-of-type(5):before { content: "Contact"; }
+            td:nth-of-type(6):before { content: "Status"; }
+            td:nth-of-type(7):before { content: ""; }
+
+            /* Alignment overrides for custom inner elements on mobile */
+            td:nth-of-type(1) {
+                justify-content: center;
+                padding-left: 16px;
+                background: #F8FAFC;
+                border-radius: 11px 11px 0 0;
+                margin-bottom: 8px;
+            }
+            
+            td strong {
+                text-align: right;
+            }
+            
+            .action-link {
+                margin: 2px;
+                padding: 8px 14px;
+                font-size: 12px;
+            }
         }
 
         /* STATUS BADGE STYLING */

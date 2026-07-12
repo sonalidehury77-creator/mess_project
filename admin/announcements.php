@@ -409,6 +409,189 @@ $today = date("Y-m-d");
             color: #14532D;
             border-left: 4px solid #22C55E;
         }
+
+        /* ==========================================================================
+           6. MOBILE RESPONSIVENESS (SMARTPHONE ADAPTATION LAYER)
+           ========================================================================== */
+        @media (max-width: 768px) {
+            body {
+                padding: 16px 12px;
+            }
+
+            .card {
+                padding: 20px 16px;
+                border-radius: 12px;
+                margin-bottom: 16px;
+            }
+
+            .header-wrapper {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 16px;
+                padding-bottom: 20px;
+            }
+
+            .header-wrapper h2 {
+                font-size: 18px;
+            }
+
+            .btn-back {
+                width: 100%;
+                text-align: center;
+                padding: 12px;
+            }
+
+            /* Stack grid elements cleanly on mobile screens */
+            .grid-2, .grid-3 {
+                grid-template-columns: 1fr;
+                gap: 16px;
+            }
+
+            form div[style*="display: flex"] {
+                flex-direction: column;
+                align-items: flex-start !important;
+                gap: 20px;
+            }
+
+            .btn-submit {
+                width: 100%;
+                padding: 14px;
+                text-align: center;
+            }
+
+            .switch-container {
+                margin-top: 0;
+            }
+
+            /* Transform traditional table structure into scannable UI cards on mobile devices */
+            .table-responsive {
+                border: none;
+            }
+
+            table, thead, tbody, th, td, tr {
+                display: block;
+            }
+
+            thead {
+                display: none; /* Hide header columns on mobile viewports */
+            }
+
+            tr {
+                background: #FFFFFF;
+                border: 1px solid #E2E8F0;
+                border-radius: 12px;
+                margin-bottom: 16px;
+                padding: 16px;
+                box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+            }
+
+            tr.status-urgent {
+                border-left: 4px solid #DC2626;
+            }
+
+            tr.status-today {
+                border-left: 4px solid #EAB308;
+            }
+
+            tr.status-expired {
+                border-left: 4px solid #94A3B8;
+            }
+
+            td {
+                padding: 8px 0;
+                border-bottom: none;
+                font-size: 13px;
+                width: 100% !important;
+            }
+
+            /* Contextual header injections for standalone data visibility */
+            td:nth-of-type(1)::before {
+                content: "Title";
+                display: block;
+                font-size: 10px;
+                text-transform: uppercase;
+                color: #64748B;
+                font-weight: 700;
+                margin-bottom: 2px;
+            }
+
+            td:nth-of-type(2)::before {
+                content: "Content Message";
+                display: block;
+                font-size: 10px;
+                text-transform: uppercase;
+                color: #64748B;
+                font-weight: 700;
+                margin-bottom: 2px;
+            }
+
+            td:nth-of-type(3)::before {
+                content: "Relevant Dates";
+                display: block;
+                font-size: 10px;
+                text-transform: uppercase;
+                color: #64748B;
+                font-weight: 700;
+                margin-bottom: 2px;
+            }
+
+            td:nth-of-type(4)::before {
+                content: "Status";
+                display: block;
+                font-size: 10px;
+                text-transform: uppercase;
+                color: #64748B;
+                font-weight: 700;
+                margin-bottom: 4px;
+            }
+
+            td:nth-of-type(5)::before {
+                content: "Attachment File";
+                display: block;
+                font-size: 10px;
+                text-transform: uppercase;
+                color: #64748B;
+                font-weight: 700;
+                margin-bottom: 2px;
+            }
+
+            td:nth-of-type(6) {
+                text-align: left !important;
+                border-top: 1px solid #F1F5F9;
+                margin-top: 8px;
+                padding-top: 12px;
+                display: flex;
+                gap: 16px;
+            }
+
+            td:nth-of-type(6)::before {
+                content: "Management Actions";
+                display: block;
+                font-size: 10px;
+                text-transform: uppercase;
+                color: #64748B;
+                font-weight: 700;
+                width: 100%;
+            }
+            
+            .action-link {
+                margin-right: 0;
+                padding: 4px 12px;
+                border-radius: 6px;
+                background: #F8FAFC;
+                border: 1px solid #E2E8F0;
+            }
+            
+            .act-edit {
+                background: #FFFBEB;
+                border-color: #FDE68A;
+            }
+            
+            .act-delete {
+                background: #FEF2F2;
+                border-color: #FEE2E2;
+            }
+        }
     </style>
 </head>
 

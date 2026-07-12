@@ -287,6 +287,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             color: #0F172A;
             font-weight: 500;
             transition: all 0.15s ease;
+            -webkit-appearance: none; /* Prevents default iOS input rendering issues */
         }
 
         input:focus {
@@ -324,13 +325,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             flex: 1;
         }
 
-        @media (max-width: 520px) {
-            .row {
-                flex-direction: column;
-                gap: 0;
-            }
-        }
-
         button[type="submit"] {
             width: 100%;
             padding: 14px;
@@ -344,6 +338,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             transition: background 0.15s ease;
             margin-top: 12px;
             box-shadow: 0 4px 6px -1px rgba(15, 23, 42, 0.15);
+            -webkit-appearance: none;
         }
 
         button[type="submit"]:hover {
@@ -380,6 +375,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         .btn-link-back {
             display: inline-flex;
             align-items: center;
+            justify-content: center;
             padding: 12px 24px;
             background: #FFFFFF;
             color: #334155;
@@ -395,6 +391,37 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             background: #F8FAFC;
             border-color: #94A3B8;
             color: #0F172A;
+        }
+
+        /* Responsive Mobile Architecture Override Rules */
+        @media (max-width: 768px) {
+            body {
+                padding: 16px 12px;
+            }
+
+            .container {
+                padding: 24px 16px;
+                border-radius: 12px;
+            }
+
+            .form-header {
+                margin-bottom: 24px;
+                padding-bottom: 16px;
+            }
+
+            .form-header h2 {
+                font-size: 20px;
+            }
+
+            .row {
+                flex-direction: column;
+                gap: 0;
+            }
+
+            .btn-link-back, button[type="submit"] {
+                width: 100%;
+                box-sizing: border-box;
+            }
         }
     </style>
 </head>

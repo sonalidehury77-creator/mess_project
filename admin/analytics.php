@@ -150,6 +150,7 @@ try {
             display: flex;
             justify-content: space-between;
             align-items: center;
+            gap: 16px;
         }
 
         .header-title h2 {
@@ -182,6 +183,9 @@ try {
             display: flex;
             align-items: center;
             gap: 12px;
+            width: 100%;
+            justify-content: flex-end;
+            flex-wrap: wrap;
         }
 
         .filter-form label {
@@ -219,6 +223,9 @@ try {
             border-radius: 8px;
             cursor: pointer;
             transition: background 0.12s ease;
+            display: inline-flex;
+            justify-content: center;
+            align-items: center;
         }
 
         .btn-filter:hover {
@@ -280,6 +287,7 @@ try {
             justify-content: center;
             font-size: 20px;
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
+            flex-shrink: 0;
         }
 
         .metric-card-box.accented-green .icon-badge {
@@ -323,12 +331,6 @@ try {
             margin-top: 12px;
         }
 
-        @media (max-width: 960px) {
-            .charts-double-row {
-                grid-template-columns: 1fr;
-            }
-        }
-
         .chart-wrapper-card {
             background: #FFFFFF;
             border: 1px solid #E2E8F0;
@@ -368,6 +370,7 @@ try {
         .btn-return {
             display: inline-flex;
             align-items: center;
+            justify-content: center;
             gap: 8px;
             background: #FFFFFF;
             color: #475569;
@@ -384,6 +387,77 @@ try {
             background: #F8FAFC;
             color: #0F172A;
             border-color: #94A3B8;
+        }
+
+        /* ==========================================================================
+           📱 MODERN RESPONSIVE APP MEDIA ENGINE
+           ========================================================================= */
+        @media (max-width: 768px) {
+            body {
+                padding: 16px 12px;
+            }
+
+            .analytics-header {
+                padding: 20px 24px;
+                border-radius: 12px 12px 0 0;
+            }
+
+            .filter-action-strip {
+                padding: 16px 24px;
+            }
+
+            .filter-form {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 8px;
+            }
+
+            .filter-form label {
+                margin-bottom: 2px;
+            }
+
+            .select-input, .btn-filter {
+                width: 100%;
+                min-width: unset;
+            }
+
+            .analytics-workspace {
+                padding: 20px;
+                border-radius: 0 0 12px 12px;
+            }
+
+            .metrics-cards-layout {
+                grid-template-columns: 1fr;
+                gap: 12px;
+                margin-bottom: 24px;
+            }
+
+            .metric-card-box {
+                padding: 16px;
+            }
+
+            .charts-double-row {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+
+            .chart-wrapper-card {
+                padding: 16px;
+            }
+
+            .chart-wrapper-card h4 {
+                font-size: 12px;
+                margin-bottom: 16px;
+            }
+            
+            /* Responsive chart viewport adjustments */
+            .chart-wrapper-card > div {
+                height: 280px !important; 
+            }
+
+            .btn-return {
+                width: 100%;
+            }
         }
     </style>
 </head>
@@ -484,7 +558,7 @@ try {
 
         <div class="footer-action-dock">
             <a href="dashboard.php" class="btn-return">
-                ⬅ Return to Administrator Dashboard
+                ⬅ Return to Dashboard
             </a>
         </div>
 

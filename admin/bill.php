@@ -173,12 +173,17 @@ $stats = [
 
 try {
     if ($search !== "") {
-        $stmt = $pdo->prepare("SELECT name, hostel_roll, room_number FROM student WHERE hostel_roll LIKE :s OR name LIKE :s ORDER BY hostel_roll ASC");
-        $stmt->execute(['s' => "%" . $search . "%"]);
+        // Option A: Use distinct parameter placeholders for each match condition
+        $stmt = $pdo->prepare("SELECT name, hostel_roll, room_number FROM student WHERE hostel_roll LIKE :search_roll OR name LIKE :search_name ORDER BY hostel_roll ASC");
+        $stmt->execute([
+            'search_roll' => "%" . $search . "%",
+            'search_name' => "%" . $search . "%"
+        ]);
     } else {
         $stmt = $pdo->query("SELECT name, hostel_roll, room_number FROM student ORDER BY hostel_roll ASC");
     }
     $students_list = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
 
     $stmt = $pdo->prepare("SELECT hostel_roll, total_amount, status, paid_at FROM bills WHERE month = :m AND year = :y");
     $stmt->execute(['m' => $month, 'y' => $year]);
@@ -296,6 +301,7 @@ if (isset($_GET['export']) && $_GET['export'] === 'csv') {
             border-bottom: 1px solid #E2E8F0;
             padding-bottom: 16px;
             margin-bottom: 24px;
+            gap: 16px;
         }
 
         .header-wrapper h2 {
@@ -321,6 +327,14 @@ if (isset($_GET['export']) && $_GET['export'] === 'csv') {
         .filters {
             display: flex;
             gap: 12px;
+            flex-wrap: wrap;
+            width: 100%;
+        }
+
+        .filters select, 
+        .filters input[type="text"], 
+        .filters button {
+            flex: 1 1 200px;
         }
 
         select,
@@ -331,6 +345,7 @@ if (isset($_GET['export']) && $_GET['export'] === 'csv') {
             font-size: 14px;
             font-weight: 600;
             outline: none;
+            width: 100%;
         }
 
         select:focus,
@@ -340,7 +355,6 @@ if (isset($_GET['export']) && $_GET['export'] === 'csv') {
 
         .table-responsive {
             width: 100%;
-            overflow-x: auto;
             border: 1px solid #E2E8F0;
             border-radius: 12px;
             background: #FFFFFF;
@@ -406,6 +420,7 @@ if (isset($_GET['export']) && $_GET['export'] === 'csv') {
         .btn {
             display: inline-flex;
             align-items: center;
+            justify-content: center;
             padding: 8px 14px;
             font-size: 13px;
             font-weight: 700;
@@ -424,6 +439,7 @@ if (isset($_GET['export']) && $_GET['export'] === 'csv') {
         .btn-export {
             background: #10B981;
             color: #FFFFFF;
+            width: 100%;
         }
 
         .btn-view {
@@ -463,7 +479,7 @@ if (isset($_GET['export']) && $_GET['export'] === 'csv') {
 
         .metrics-board {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
             gap: 16px;
             margin-bottom: 24px;
         }
@@ -490,7 +506,6 @@ if (isset($_GET['export']) && $_GET['export'] === 'csv') {
             margin-top: 4px;
         }
 
-        /* Progress Bar */
         .progress-container {
             width: 100%;
             background-color: #E2E8F0;
@@ -512,6 +527,115 @@ if (isset($_GET['export']) && $_GET['export'] === 'csv') {
             color: #64748B;
             display: block;
             margin-top: 2px;
+        }
+
+        /* ==========================================================================
+           📱 RESPONSIVE MEDIA QUERIES FOR APP-LIKE MOBILE LAYOUT
+           ========================================================================= */
+        @media (max-width: 768px) {
+            body {
+                padding: 16px 12px;
+            }
+
+            .header-wrapper {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .header-wrapper a {
+                width: 100%;
+                text-align: center;
+            }
+
+            .toolbar-box > div {
+                width: 100%;
+            }
+
+            .filters {
+                flex-direction: column;
+                gap: 8px;
+            }
+
+            .filters select, 
+            .filters input[type="text"], 
+            .filters button {
+                width: 100%;
+                flex: none;
+            }
+
+            /* Unravel Table into clean Card Stacks */
+            .table-responsive {
+                border: none;
+                background: transparent;
+            }
+
+            table, thead, tbody, th, td, tr {
+                display: block;
+            }
+
+            thead {
+                display: none; /* Hide traditional columns */
+            }
+
+            tr {
+                background: #FFFFFF;
+                border: 1px solid #CBD5E1;
+                border-radius: 12px;
+                padding: 16px;
+                margin-bottom: 16px;
+                box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+            }
+
+            td {
+                border: none;
+                padding: 8px 0;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                text-align: right;
+                font-size: 13px;
+            }
+
+            /* Create custom headers inside mobile card elements */
+            td::before {
+                content: attr(data-label);
+                float: left;
+                font-weight: 700;
+                color: #475569;
+                text-transform: uppercase;
+                font-size: 11px;
+                text-align: left;
+                padding-right: 10px;
+            }
+
+            /* Make primary fields expand elegantly */
+            td:first-child {
+                border-bottom: 1px solid #F1F5F9;
+                padding-bottom: 12px;
+                margin-bottom: 4px;
+            }
+
+            td:last-child {
+                border-top: 1px solid #F1F5F9;
+                padding-top: 12px;
+                margin-top: 4px;
+                width: 100%;
+                display: block;
+                text-align: center;
+            }
+
+            td:last-child div {
+                display: flex !important;
+                width: 100%;
+                gap: 8px;
+            }
+
+            td:last-child a, 
+            td:last-child button {
+                flex: 1;
+                text-align: center;
+                justify-content: center;
+            }
         }
     </style>
 </head>
@@ -602,66 +726,66 @@ if (isset($_GET['export']) && $_GET['export'] === 'csv') {
                     </tr>
                 </thead>
                 <tbody>
-                    <?php if (count($display_roster) === 0): ?>
-                        <tr>
-                            <td colspan="6" style="text-align: center; color: #64748B; padding: 40px;">📭 No student records found.</td>
-                        </tr>
-                    <?php else: ?>
-                        <?php foreach ($display_roster as $row):
-                            $is_paid = ($row['status'] === 'paid');
-                        ?>
-                            <tr>
-                                <td>
-                                    <strong><?php echo htmlspecialchars($row['name']); ?></strong><br>
-                                    <span class="sub-text">Roll: <?php echo htmlspecialchars($row['hostel_roll']); ?> | Rm: <?php echo htmlspecialchars($row['room_number']); ?></span>
-                                </td>
-                                <td>
-                                    <strong><?php echo $row['meal_info']['meals']; ?> Total Meals</strong><br>
-                                    <span class="sub-text"><?php echo $row['meal_info']['breakdown']['main']; ?> Main / <?php echo $row['meal_info']['breakdown']['bk']; ?> Brkfst</span>
-                                </td>
-                                <td><span style="color:#64748B; font-weight:700;"><?php echo $display_month_name; ?></span></td>
-                                <td style="font-size: 15px; font-weight: 800; color: #0F172A;">
-                                    ₹ <?php echo number_format($row['amount'], 2); ?>
-                                </td>
-                                <td>
-                                    <?php
-                                    if ($is_paid) {
-                                        echo "<span class='badge badge-success'>✅ Paid On " . date("d M", strtotime($row['paid_at'])) . "</span>";
-                                    } else {
-                                        if ($period_state === 'running') {
-                                            echo "<span class='badge badge-running'>🔄 Running (Est.)</span>";
-                                        } elseif ($period_state === 'future') {
-                                            echo "<span class='badge badge-future'>⏳ Upcoming</span>";
-                                        } else {
-                                            echo "<span class='badge badge-alert'>⚠️ Unpaid</span>";
-                                        }
-                                    }
-                                    ?>
-                                </td>
-                                <td style="text-align: right;">
-                                    <div style="display: inline-flex; gap: 6px;">
-                                        <?php if ($period_state === 'running' || $period_state === 'future'): ?>
-                                            <button class="btn btn-disabled" disabled title="Bill not generated until month end">View Locked</button>
-                                        <?php else: ?>
-                                            <a class="btn btn-view" href="view_bill.php?roll=<?php echo urlencode($row['hostel_roll']); ?>&month=<?php echo $month; ?>&year=<?php echo $year; ?>" target="_blank">📄 View</a>
-                                        <?php endif; ?>
-                                        <?php if ($period_state === 'future'): ?>
-                                            <button class="btn btn-disabled" disabled>Unavailable</button>
-                                        <?php elseif ($period_state === 'running'): ?>
-                                            <button class="btn btn-disabled" disabled title="Bills finalize at the end of the month">Closes at Month End</button>
-                                        <?php else: ?>
-                                            <?php if ($is_paid): ?>
-                                                <a class="btn btn-revert" href="bill.php?action_toggle=pending&roll=<?php echo urlencode($row['hostel_roll']); ?>&month=<?php echo $month; ?>&year=<?php echo $year; ?>&search=<?php echo urlencode($search); ?>" onclick="return confirm('Change status back to unpaid?');">Mark Unpaid</a>
-                                            <?php else: ?>
-                                                <a class="btn btn-settle" href="bill.php?action_toggle=paid&roll=<?php echo urlencode($row['hostel_roll']); ?>&month=<?php echo $month; ?>&year=<?php echo $year; ?>&search=<?php echo urlencode($search); ?>">Mark Paid</a>
-                                            <?php endif; ?>
-                                        <?php endif; ?>
-                                    </div>
-                                </td>
-                            </tr>
-                        <?php endforeach; ?>
-                    <?php endif; ?>
-                </tbody>
+    <?php if (count($display_roster) === 0): ?>
+        <tr>
+            <td colspan="6" style="text-align: center; color: #64748B; padding: 40px;">📭 No student records found.</td>
+        </tr>
+    <?php else: ?>
+        <?php foreach ($display_roster as $row):
+            $is_paid = ($row['status'] === 'paid');
+        ?>
+            <tr>
+                <td data-label="Student Info">
+                    <strong><?php echo htmlspecialchars($row['name']); ?></strong><br>
+                    <span class="sub-text">Roll: <?php echo htmlspecialchars($row['hostel_roll']); ?> | Rm: <?php echo htmlspecialchars($row['room_number']); ?></span>
+                </td>
+                <td data-label="Meal Activity">
+                    <strong><?php echo $row['meal_info']['meals']; ?> Total Meals</strong><br>
+                    <span class="sub-text"><?php echo $row['meal_info']['breakdown']['main']; ?> Main / <?php echo $row['meal_info']['breakdown']['bk']; ?> Brkfst</span>
+                </td>
+                <td data-label="Billing Month"><span style="color:#64748B; font-weight:700;"><?php echo $display_month_name; ?></span></td>
+                <td data-label="Calculated Bill" style="font-size: 15px; font-weight: 800; color: #0F172A;">
+                    ₹ <?php echo number_format($row['amount'], 2); ?>
+                </td>
+                <td data-label="Status">
+                    <?php
+                    if ($is_paid) {
+                        echo "<span class='badge badge-success'>✅ Paid On " . date("d M", strtotime($row['paid_at'])) . "</span>";
+                    } else {
+                        if ($period_state === 'running') {
+                            echo "<span class='badge badge-running'>🔄 Running (Est.)</span>";
+                        } elseif ($period_state === 'future') {
+                            echo "<span class='badge badge-future'>⏳ Upcoming</span>";
+                        } else {
+                            echo "<span class='badge badge-alert'>⚠️ Unpaid</span>";
+                        }
+                    }
+                    ?>
+                </td>
+                <td data-label="Actions">
+                    <div style="display: inline-flex; gap: 6px;">
+                        <?php if ($period_state === 'running' || $period_state === 'future'): ?>
+                            <button class="btn btn-disabled" disabled title="Bill not generated until month end">View Locked</button>
+                        <?php else: ?>
+                            <a class="btn btn-view" href="view_bill.php?roll=<?php echo urlencode($row['hostel_roll']); ?>&month=<?php echo $month; ?>&year=<?php echo $year; ?>" target="_blank">📄 View</a>
+                        <?php endif; ?>
+                        <?php if ($period_state === 'future'): ?>
+                            <button class="btn btn-disabled" disabled>Unavailable</button>
+                        <?php elseif ($period_state === 'running'): ?>
+                            <button class="btn btn-disabled" disabled title="Bills finalize at the end of the month">Closes at Month End</button>
+                        <?php else: ?>
+                            <?php if ($is_paid): ?>
+                                <a class="btn btn-revert" href="bill.php?action_toggle=pending&roll=<?php echo urlencode($row['hostel_roll']); ?>&month=<?php echo $month; ?>&year=<?php echo $year; ?>&search=<?php echo urlencode($search); ?>" onclick="return confirm('Change status back to unpaid?');">Mark Unpaid</a>
+                            <?php else: ?>
+                                <a class="btn btn-settle" href="bill.php?action_toggle=paid&roll=<?php echo urlencode($row['hostel_roll']); ?>&month=<?php echo $month; ?>&year=<?php echo $year; ?>&search=<?php echo urlencode($search); ?>">Mark Paid</a>
+                            <?php endif; ?>
+                        <?php endif; ?>
+                    </div>
+                </td>
+            </tr>
+        <?php endforeach; ?>
+    <?php endif; ?>
+</tbody>
             </table>
         </div>
 

@@ -9,7 +9,7 @@ if (session_status() === PHP_SESSION_NONE) {
     session_start(); 
 }
 
-// 2. INCLUDE DATABASE CONNECTION
+// 2. INCLUDE DATABASE CONNECTION (Corrected path to match the rest of the authentication workflow)
 require_once __DIR__ . "/../config/db_connect.php";
 
 // 3. IF STUDENT IS ALREADY LOGGED IN, REDIRECT TO DASHBOARD
@@ -73,13 +73,13 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                     $generic_error_msg = "❌ Invalid Hostel Roll Number or Password.";
 
                     if ($student) {
-                        // Check if password matches criteria (Accepts encrypted hashes and clear text references)
-                        if (password_verify($password, $student['password']) || $password === $student['password']) {
+                        // Removed security exploit flaw (plain text matching fallback) to fully rely on secure password_verify hashes
+                        if (password_verify($password, $student['password'])) {
                             
                             // Check if admin has restricted this student account AFTER matching password
                             if ($student['status'] === 'blocked') {
                                 $reason = !empty($student['block_reason']) ? $student['block_reason'] : "Please contact the hostel administrative desk.";
-                                $blocked_message = "🚫 <b>Account Access Suspended</b><br><br><b>Reason:</b> " . htmlspecialchars($reason) . "<br><br>📧 <b>Support Email:</b> hosteloffice@email.com";
+                                $blocked_message = "🚫 <b>Account Access Suspended</b><br><br><b>Reason:</b> " . htmlspecialchars($reason, ENT_QUOTES, 'UTF-8') . "<br><br>📧 <b>Support Email:</b> hosteloffice@email.com";
                                 $_SESSION['login_attempts'] = 0;
                             } else {
                                 // Reset tracking on clear login match
@@ -109,7 +109,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                     }
                 } catch (PDOException $e) {
                     error_log("Database Login Error: " . $e->getMessage());
-                    $error = "⚠️ A critical database execution issue occurred on the server: " . $e->getMessage();
+                    $error = "⚠️ A critical database execution issue occurred on the server.";
                 }
             } else {
                 $error = "❌ Please fill out all required fields.";
@@ -149,7 +149,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         </div>
 
         <form method="POST" action="" autocomplete="off" id="loginForm" class="space-y-5">
-            <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($_SESSION['csrf_token'] ?? ''); ?>">
+            <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($_SESSION['csrf_token'] ?? '', ENT_QUOTES, 'UTF-8'); ?>">
 
             <div class="space-y-1.5">
                 <label for="hostel_roll" class="text-xs font-bold text-slate-700 uppercase tracking-wider">Hostel Roll Number</label>
@@ -158,7 +158,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                     id="hostel_roll"
                     name="hostel_roll"
                     placeholder="e.g., 415"
-                    value="<?php echo isset($_POST['hostel_roll']) ? htmlspecialchars($_POST['hostel_roll']) : ''; ?>"
+                    value="<?php echo isset($_POST['hostel_roll']) ? htmlspecialchars($_POST['hostel_roll'], ENT_QUOTES, 'UTF-8') : ''; ?>"
                     required
                     maxlength="20"
                     oninput="this.value = this.value.toUpperCase()"

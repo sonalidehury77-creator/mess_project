@@ -265,6 +265,114 @@ foreach ($raw_menu as $row) {
         .btn-save:hover {
             background: #1E293B;
         }
+
+        /* ==========================================================================
+           MODERN RESPONSIVE CARD LAYOUT FOR MOBILE SCREENS ONLY (<= 768px)
+           ========================================================================== */
+        @media screen and (max-width: 768px) {
+            body {
+                padding: 16px 8px;
+            }
+
+            .container {
+                padding: 16px;
+                border-radius: 12px;
+            }
+
+            .header-wrapper {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 12px;
+                text-align: center;
+            }
+
+            .btn-back {
+                justify-content: center;
+                width: 100%;
+            }
+
+            .table-responsive {
+                border: none;
+            }
+
+            table, thead, tbody, th, td, tr {
+                display: block;
+                width: 100%;
+            }
+
+            thead {
+                display: none;
+            }
+
+            tr {
+                background: #FFFFFF;
+                border: 2px solid #E2E8F0;
+                border-radius: 14px;
+                margin-bottom: 20px;
+                padding: 16px;
+                box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+            }
+
+            tr:hover td {
+                background: transparent;
+            }
+
+            td {
+                padding: 8px 0 !important;
+                border-bottom: none !important;
+            }
+
+            td:first-child {
+                border-bottom: 2px solid #F1F5F9 !important;
+                padding-bottom: 12px !important;
+                margin-bottom: 8px;
+            }
+
+            .day-label {
+                font-size: 18px;
+                color: #2563EB;
+                display: flex;
+                align-items: center;
+                gap: 6px;
+            }
+
+            td:nth-child(2)::before { content: "🌅 Morning Breakfast"; }
+            td:nth-child(3)::before { content: "🥗 Lunch (Vegetarian)"; }
+            td:nth-child(4)::before { content: "🍗 Lunch (Non-Vegetarian)"; }
+            td:nth-child(5)::before { content: "🥦 Dinner (Vegetarian)"; }
+            td:nth-child(6)::before { content: "🍖 Dinner (Non-Vegetarian)"; }
+
+            td:nth-child(2)::before,
+            td:nth-child(3)::before,
+            td:nth-child(4)::before,
+            td:nth-child(5)::before,
+            td:nth-child(6)::before {
+                display: block;
+                font-size: 11px;
+                font-weight: 700;
+                color: #64748B;
+                text-transform: uppercase;
+                letter-spacing: 0.05em;
+                margin-bottom: 4px;
+            }
+
+            input.menu-input {
+                padding: 12px;
+                font-size: 14px;
+            }
+
+            td:last-child {
+                padding-top: 12px !important;
+            }
+
+            .btn-save {
+                padding: 12px;
+                font-size: 14px;
+                text-transform: uppercase;
+                letter-spacing: 0.05em;
+                box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.2);
+            }
+        }
     </style>
 </head>
 <body>

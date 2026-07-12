@@ -1,185 +1,147 @@
 <?php
 /**
- * 📲 Hostel Management System - Password Recovery Gateway
- * Features: Identity Verification, Secure OTP Generation, Expiry Tracking
+ * 🔒 auth/forgot_password.php
+ * 
+ * Account Recovery & Verification Token Generation Interface
  */
+
+header("X-Content-Type-Options: nosniff");
+header("X-Frame-Options: DENY");
+header("X-XSS-Protection: 1; mode=block");
 
 if (session_status() === PHP_SESSION_NONE) {
     session_start([
         'cookie_httponly' => true,
         'cookie_secure'   => isset($_SERVER['HTTPS']),
         'use_strict_mode' => true,
-        'cookie_samesite' => 'Strict'
     ]);
 }
 
-require_once __DIR__ . "/../config/db_connect.php";
-
-// Redirect if already logged in
-if (isset($_SESSION['hostel_roll'])) {
-    header("Location: ../student/dashboard.php");
-    exit();
-}
+require_once __DIR__ . '/../config/db_connect.php'; 
+require_once __DIR__ . '/mail_config.php';   
 
 if (empty($_SESSION['csrf_token'])) {
     $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
 }
 
-$error = "";
-$success_message = "";
+$error_message   = '';
 
-/**
- * Helper function to interface with your mobile SMS network api provider
- */
-function sendSMSViaGateway($phoneNumber, $otpCode) {
-    // Log OTP locally in server storage for testing/debugging purposes
-    error_log("SMS Gateway Simulation to [$phoneNumber]: Your verification OTP code is $otpCode");
-    
-    /* // Industry implementation template using cURL:
-    $apiUrl = "https://api.yourprovider.com/send?apiKey=YOUR_KEY&to=" . urlencode($phoneNumber) . "&message=" . urlencode("Your Hostel Portal password reset OTP is: " . $otpCode);
-    $ch = curl_init();
-    curl_setopt($ch, CURLOPT_URL, $apiUrl);
-    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-    $response = curl_exec($ch);
-    curl_close($ch);
-    */
-    return true; 
-}
-
-if ($_SERVER["REQUEST_METHOD"] === "POST") {
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (!isset($_POST['csrf_token']) || !hash_equals($_SESSION['csrf_token'], $_POST['csrf_token'])) {
-        http_response_code(403);
-        die("Security Validation Failed: Invalid CSRF Form Token.");
-    }
+        $error_message = 'Security token invalid. Re-authenticate access.';
+    } else {
+        $hostel_roll = filter_input(INPUT_POST, 'hostel_roll', FILTER_UNSAFE_RAW);
+        $email       = filter_input(INPUT_POST, 'email', FILTER_VALIDATE_EMAIL);
 
-    $roll  = strtoupper(trim($_POST['hostel_roll'] ?? ''));
-    $phone = trim($_POST['phone'] ?? '');
+        if (!$hostel_roll || !$email) {
+            $error_message = 'Provide a valid Hostel Roll and properly formatted email.';
+        } else {
+            try {
+                $stmt = $pdo->prepare("SELECT id, name, email, hostel_roll, status FROM student WHERE hostel_roll = :hostel_roll AND email = :email LIMIT 1");
+                $stmt->execute([
+                    ':hostel_roll' => trim($hostel_roll),
+                    ':email'       => trim($email)
+                ]);
+                $student = $stmt->fetch(PDO::FETCH_ASSOC);
+                
 
-    if (!empty($roll) && !empty($phone)) {
-        try {
-            // Check if the combination of Roll Number and Phone Number exists
-            $stmt = $pdo->prepare("SELECT id, hostel_roll, phone, status FROM student WHERE hostel_roll = :roll AND phone = :phone LIMIT 1");
-            $stmt->execute(['roll' => $roll, 'phone' => $phone]);
-            $student = $stmt->fetch(PDO::FETCH_ASSOC);
-
-            if ($student) {
-                if ($student['status'] === 'blocked') {
-                    $error = "🚫 Access Restricted. This account is currently suspended.";
+                if (!$student) {
+                    $error_message = 'No match found for the requested credentials.';
+                } elseif (isset($student['status']) && (string)$student['status'] === 'blocked') {
+                    $error_message = 'Your resident profile is locked. Contact the Chief Warden office.';
                 } else {
-                    // Generate a strong, secure 6-digit numerical OTP code
                     $otp = (string)random_int(100000, 999999);
-                    
-                    // Set an expiry window of exactly 10 minutes from now
-                    $expiry_time = date('Y-m-d H:i:s', time() + 600);
+                    $otp_expiry = date('Y-m-d H:i:s', time() + 600); // 10 minutes from now
 
-                    // Alter database table schema to save OTP details dynamically
-                    // ALTER TABLE student ADD COLUMN reset_otp VARCHAR(6) NULL, ADD COLUMN otp_expiry DATETIME NULL;
-                    $updateStmt = $pdo->prepare("UPDATE student SET reset_otp = :otp, otp_expiry = :expiry WHERE id = :id");
-                    $updateStmt->execute([
-                        'otp'    => $otp,
-                        'expiry' => $expiry_time,
-                        'id'     => $student['id']
+                    $update_stmt = $pdo->prepare("UPDATE student SET reset_otp = :otp, otp_expiry = :expiry WHERE id = :id");
+                    $update_stmt->execute([
+                        ':otp'    => $otp,
+                        ':expiry' => $otp_expiry,
+                        ':id'     => $student['id']
                     ]);
 
-                    // Fire the SMS request payload framework link
-                    sendSMSViaGateway($student['phone'], $otp);
+                    if (sendOTPEmail($student['email'], $student['name'], $otp)) {
+                        $_SESSION['reset_student_id']  = $student['id'];
+                        $_SESSION['reset_hostel_roll'] = $student['hostel_roll'];
+                        $_SESSION['otp_verified']      = false;
+                        $_SESSION['otp_attempts']      = 0;
+                        $_SESSION['last_otp_request_time'] = time();
 
-                    // Track temporary verification data in user session state safely
-                    $_SESSION['reset_student_id'] = $student['id'];
-                    $_SESSION['reset_hostel_roll'] = $student['hostel_roll'];
-                    $_SESSION['otp_verified'] = false;
-
-                    header("Location: verify_otp.php");
-                    exit();
+                        header("Location: verify_otp.php");
+                        exit();
+                    } else {
+                        $error_message = 'The validation routing pipeline failed. Try again later.';
+                    }
                 }
-            } else {
-                // Generic feedback prevents malicious attackers from crawling registered phone combinations
-                $error = "❌ No matching account profile records discovered.";
+            } catch (PDOException $e) {
+                error_log("Database Account Recovery Runtime Failure: " . $e->getMessage());
+                $error_message = 'Internal application transaction crash.';
             }
-        } catch (PDOException $e) {
-            error_log("Forgot Password Matrix Fault: " . $e->getMessage());
-            $error = "⚠️ A structural system error happened while verifying your credentials.";
         }
-    } else {
-        $error = "❌ Please fulfill all input field metrics.";
     }
 }
 ?>
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="h-full bg-slate-50">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Forgot Password - Student Portal</title>
+    <title>Account Recovery | Hostel Mess Portal</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <style>body { font-family: 'Inter', sans-serif; }</style>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Poppins', 'sans-serif'] },
+                    colors: { univ: { 900: '#1e3a8a', 800: '#1e40af', 50: '#f0f4f8' } }
+                }
+            }
+        }
+    </script>
 </head>
-<body class="bg-slate-50 min-h-screen flex flex-col justify-center items-center p-6 antialiased">
-
-    <div class="w-full max-w-md bg-white border border-slate-200 p-8 rounded-3xl shadow-xl shadow-slate-200/50">
-        
-        <div class="flex flex-col items-center text-center mb-8">
-            <div class="bg-indigo-50 text-indigo-600 w-12 h-12 flex items-center justify-center rounded-2xl font-bold text-xl mb-4">
-                🔑
-            </div>
-            <h2 class="text-2xl font-bold text-slate-900 tracking-tight">Recover Password</h2>
-            <p class="text-xs text-slate-500 font-medium mt-1">We will send a 6-digit OTP verification code to your phone.</p>
+<body class="h-full flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 antialiased">
+    <div class="max-w-md w-full space-y-8 bg-white p-8 rounded-2xl border border-slate-200/80 shadow-xl relative overflow-hidden">
+        <div class="absolute inset-0 opacity-5 pointer-events-none bg-[radial-gradient(#1e3a8a_1px,transparent_0)] [background-size:16px_16px]"></div>
+        <div class="relative z-10 text-center">
+            <div class="mx-auto h-12 w-12 bg-univ-50 text-univ-900 rounded-xl flex items-center justify-center text-xl shadow-sm"><i class="fa-solid fa-shield-halved"></i></div>
+            <h2 class="mt-4 text-xl font-extrabold tracking-tight text-univ-900 uppercase">Forgot Password</h2>
+            <p class="mt-1.5 text-xs text-slate-500 font-light">Enter your student credentials to receive a verification OTP token.</p>
         </div>
 
-        <form method="POST" autocomplete="off" id="forgotForm" class="space-y-5">
-            <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($_SESSION['csrf_token']); ?>">
-            
-            <div class="space-y-1.5">
-                <label for="hostel_roll" class="text-xs font-bold text-slate-700 uppercase tracking-wider">Hostel Roll Number</label>
-                <input 
-                    type="text" 
-                    id="hostel_roll"
-                    name="hostel_roll" 
-                    placeholder="e.g., H-102" 
-                    required 
-                    oninput="this.value = this.value.toUpperCase()"
-                    class="w-full px-4 py-3 border border-slate-200 rounded-xl text-sm font-medium focus:outline-none focus:border-indigo-600 focus:ring-4 focus:ring-indigo-50"
-                >
-            </div>
-
-            <div class="space-y-1.5">
-                <label for="phone" class="text-xs font-bold text-slate-700 uppercase tracking-wider">Registered Phone Number</label>
-                <input 
-                    type="text" 
-                    id="phone"
-                    name="phone" 
-                    maxlength="10"
-                    placeholder="Enter 10-digit mobile number" 
-                    required 
-                    oninput="this.value = this.value.replace(/[^0-9]/g,'')"
-                    class="w-full px-4 py-3 border border-slate-200 rounded-xl text-sm font-medium focus:outline-none focus:border-indigo-600 focus:ring-4 focus:ring-indigo-50"
-                >
-            </div>
-
-            <button type="submit" id="submitBtn" class="w-full bg-slate-900 hover:bg-indigo-600 text-white font-semibold text-sm py-3.5 rounded-xl transition-all duration-200 shadow-md">
-                Send OTP Verification
-            </button>
-        </form>
-
-        <?php if (!empty($error)): ?>
-            <div class="bg-rose-50 border border-rose-100 text-rose-800 text-xs font-semibold p-3.5 rounded-xl mt-5 text-center">
-                <?php echo $error; ?>
+        <?php if (!empty($error_message)): ?>
+            <div class="bg-red-50 border border-red-200/60 rounded-xl p-4 flex gap-3 text-xs text-red-700 relative z-10">
+                <i class="fa-solid fa-circle-exclamation text-base text-red-500 shrink-0 mt-0.5"></i>
+                <p class="font-medium leading-relaxed"><?= htmlspecialchars($error_message, ENT_QUOTES, 'UTF-8'); ?></p>
             </div>
         <?php endif; ?>
 
-        <div class="mt-8 pt-5 border-t border-slate-100 text-center text-xs font-medium text-slate-500">
-            Remembered your access keys? <a href="login.php" class="text-indigo-600 font-semibold hover:underline">Back to Login</a>
+        <form class="mt-6 space-y-5 relative z-10" action="" method="POST" autocomplete="off">
+            <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($_SESSION['csrf_token'], ENT_QUOTES, 'UTF-8'); ?>">
+            <div class="space-y-1.5">
+                <label for="hostel_roll" class="block text-[11px] font-bold uppercase tracking-wider text-slate-600">Hostel Roll Number</label>
+                <div class="relative rounded-xl shadow-sm">
+                    <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400 text-xs"><i class="fa-solid fa-id-card"></i></div>
+                    <input id="hostel_roll" name="hostel_roll" type="text" required placeholder="e.g. H2026-99" class="block w-full pl-10 pr-4 py-3 border border-slate-300 rounded-xl text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-univ-900 focus:border-univ-900 font-mono">
+                </div>
+            </div>
+            <div class="space-y-1.5">
+                <label for="email" class="block text-[11px] font-bold uppercase tracking-wider text-slate-600">Registered Email Address</label>
+                <div class="relative rounded-xl shadow-sm">
+                    <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400 text-xs"><i class="fa-solid fa-envelope"></i></div>
+                    <input id="email" name="email" type="email" required placeholder="resident@university.edu" class="block w-full pl-10 pr-4 py-3 border border-slate-300 rounded-xl text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-univ-900 focus:border-univ-900">
+                </div>
+            </div>
+            <div>
+                <button type="submit" class="w-full flex justify-center py-3 px-4 text-xs font-bold uppercase tracking-wider rounded-xl text-white bg-univ-900 hover:bg-univ-800 shadow-md transition-all">Send Verification OTP</button>
+            </div>
+        </form>
+        <div class="text-center relative z-10 border-t border-slate-100 pt-4">
+            <a href="login.php" class="text-xs font-semibold text-univ-900 hover:text-univ-800 transition-colors inline-flex items-center gap-1.5"><i class="fa-solid fa-arrow-left-long text-[10px]"></i> Back to Login</a>
         </div>
     </div>
-
-    <script>
-        document.getElementById("forgotForm").addEventListener("submit", function() {
-            const btn = document.getElementById("submitBtn");
-            btn.disabled = true;
-            btn.className = "w-full bg-slate-400 text-white font-semibold text-sm py-3.5 rounded-xl cursor-not-allowed text-center animate-pulse";
-            btn.innerHTML = "Verifying Identity Profile...";
-        });
-    </script>
 </body>
 </html>

@@ -294,6 +294,7 @@ $existing_menus = $list_stmt->fetchAll(PDO::FETCH_ASSOC);
 
         /* STATUS BADGES & INTERACTION CONTROLS */
         .badge {
+            display: inline-block;
             padding: 4px 10px;
             border-radius: 9999px;
             font-size: 12px;
@@ -322,6 +323,7 @@ $existing_menus = $list_stmt->fetchAll(PDO::FETCH_ASSOC);
             font-size: 14px;
             cursor: pointer;
             margin-top: 20px;
+            width: auto;
         }
         .btn-submit:hover { background: #1E293B; }
 
@@ -349,6 +351,115 @@ $existing_menus = $list_stmt->fetchAll(PDO::FETCH_ASSOC);
         .toast-error { background: #FEE2E2; color: #7F1D1D; border-left: 4px solid #EF4444; }
 
         input:disabled { background: #E2E8F0; cursor: not-allowed; }
+
+        /* ==========================================================================
+           7. TARGETED MOBILE LAYOUT OPTIMIZATIONS (Laptop Layout Remains Intact)
+           ========================================================================== */
+        @media (max-width: 768px) {
+            body {
+                padding: 16px 12px;
+            }
+
+            .card {
+                padding: 16px;
+                border-radius: 12px;
+            }
+
+            .header-wrapper {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 12px;
+            }
+
+            .header-wrapper h2 {
+                font-size: 18px;
+            }
+
+            .btn-back, .btn-submit {
+                width: 100%;
+                text-align: center;
+            }
+
+            .grid-2 {
+                grid-template-columns: 1fr;
+                gap: 12px;
+            }
+
+            .grid-4 {
+                grid-template-columns: 1fr;
+                gap: 12px;
+            }
+
+            /* Responsive Visual Table Reconstruction Engine */
+            .table-responsive {
+                border: none;
+            }
+
+            table, thead, tbody, th, td, tr {
+                display: block;
+            }
+
+            thead tr {
+                position: absolute;
+                top: -9999px;
+                left: -9999px;
+            }
+
+            tr {
+                background: #F8FAFC;
+                border: 1px solid #E2E8F0;
+                border-radius: 12px;
+                margin-bottom: 16px;
+                padding: 12px;
+                box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+            }
+
+            td {
+                border-bottom: 1px dashed #E2E8F0;
+                padding: 10px 0;
+                position: relative;
+                padding-left: 40%;
+                text-align: left;
+                font-size: 13px;
+            }
+
+            td:last-child {
+                border-bottom: none;
+                text-align: right;
+                padding-left: 0;
+                margin-top: 6px;
+            }
+
+            /* Dynamic CSS Data Label Injections */
+            td::before {
+                position: absolute;
+                left: 0;
+                width: 35%;
+                white-space: nowrap;
+                font-weight: 700;
+                color: #475569;
+                text-transform: uppercase;
+                font-size: 11px;
+                letter-spacing: 0.02em;
+            }
+
+            td:nth-of-type(1)::before { content: "Weekday"; }
+            td:nth-of-type(2)::before { content: "Date"; }
+            td:nth-of-type(3)::before { content: "Lunch"; }
+            td:nth-of-type(4)::before { content: "Dinner"; }
+            td:nth-of-type(5)::before { content: "Status"; }
+            td:nth-of-type(6)::before { content: ""; }
+            
+            .action-link {
+                display: inline-block;
+                padding: 6px 14px;
+                border-radius: 6px;
+                background: #FFF;
+                border: 1px solid #CBD5E1;
+            }
+            .act-edit { color: #D97706; border-color: #FCD34D; }
+            .act-delete { color: #DC2626; border-color: #FCA5A5; }
+        }
     </style>
     <script>
         function processSyncStates() {
@@ -512,7 +623,7 @@ $existing_menus = $list_stmt->fetchAll(PDO::FETCH_ASSOC);
                                             <?php echo $row['is_active'] ? 'Active' : 'Expired'; ?>
                                         </span>
                                     </td>
-                                    <td style="text-align: right;">
+                                    <td>
                                         <a href="?edit=<?php echo $row['id']; ?>" class="action-link act-edit">Edit</a>
                                         <a href="?delete=<?php echo $row['id']; ?>" class="action-link act-delete" onclick="return confirm('Delete this special menu configuration? This cannot be undone.')">Remove</a>
                                     </td>

@@ -282,12 +282,6 @@ try {
             margin-bottom: 36px;
         }
 
-        @media (max-width: 900px) {
-            .analytics-split-view {
-                grid-template-columns: 1fr;
-            }
-        }
-
         .content-block-panel {
             background: #FFFFFF;
             border: 1px solid #E2E8F0;
@@ -377,7 +371,6 @@ try {
             text-align: right;
         }
 
-        /* CONTACT TICKETS STYLING ADDITIONS */
         .ticket-card {
             background: #F8FAFC;
             border-left: 4px solid #0F172A;
@@ -388,22 +381,26 @@ try {
             padding: 16px;
             margin-bottom: 12px;
         }
+
         .ticket-header {
             display: flex;
             justify-content: space-between;
             align-items: flex-start;
             margin-bottom: 8px;
         }
+
         .ticket-user-info h4 {
             font-size: 14px;
             font-weight: 700;
             color: #0F172A;
         }
+
         .ticket-user-info span {
             font-size: 11px;
             color: #64748B;
             font-weight: 600;
         }
+
         .ticket-message {
             font-size: 13px;
             color: #334155;
@@ -438,6 +435,102 @@ try {
             background: #F8FAFC;
             color: #0F172A;
             border-color: #94A3B8;
+        }
+
+        /* ==========================================================================
+           📱 HIGH-FIDELITY MOBILE PLATFORM OPTIMIZATIONS (Max-Width: 768px)
+           ========================================================================== */
+        @media (max-width: 768px) {
+            body {
+                padding: 12px 8px; /* Remove thick desktop layout borders */
+            }
+
+            .dashboard-header {
+                padding: 16px;
+                border-radius: 12px 12px 0 0;
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 12px;
+            }
+
+            .title-block h2 {
+                font-size: 18px;
+            }
+
+            .toolbar-strip {
+                padding: 12px 16px;
+                justify-content: gap;
+                width: 100%;
+            }
+
+            .filter-group {
+                width: 100%;
+                justify-content: space-between;
+            }
+
+            .select-filter {
+                width: 60%;
+                font-size: 12px;
+                padding: 6px 10px;
+            }
+
+            .workspace-body {
+                padding: 16px 12px;
+                border-radius: 0 0 12px 12px;
+            }
+
+            .metrics-bento-grid {
+                grid-template-columns: 1fr; /* Switch into fluid full-width modules */
+                gap: 12px;
+                margin-bottom: 24px;
+            }
+
+            .bento-card {
+                padding: 16px;
+            }
+
+            .analytics-split-view {
+                grid-template-columns: 1fr;
+                gap: 20px;
+                margin-bottom: 24px;
+            }
+
+            .content-block-panel {
+                padding: 16px 12px;
+            }
+
+            /* Adjust chart area box context rules */
+            .content-block-panel style {
+                height: 260px !important; 
+            }
+
+            .node-meta-top {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 6px;
+            }
+
+            .score-star-badge {
+                align-self: flex-end;
+                margin-top: -20px;
+            }
+
+            .ticket-header {
+                flex-direction: column;
+                gap: 6px;
+            }
+
+            .ticket-header .node-timestamp-bottom {
+                text-align: left;
+                font-size: 10px;
+            }
+            
+            .btn-return-hub {
+                width: 100%;
+                justify-content: center;
+                font-size: 13px;
+                padding: 12px 16px;
+            }
         }
     </style>
 </head>
@@ -566,7 +659,7 @@ try {
 
         <div class="navigation-action-dock">
             <a href="dashboard.php" class="btn-return-hub">
-                ⬅ Return to Main Admin Dashboard
+                ⬅ Return to Dashboard
             </a>
         </div>
 

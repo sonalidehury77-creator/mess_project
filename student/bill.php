@@ -341,12 +341,6 @@ $month_name = date("F Y", strtotime("$selected_year-$selected_month-01"));
             align-items: start;
         }
 
-        @media (max-width: 768px) {
-            .billing-summary {
-                grid-template-columns: 1fr;
-            }
-        }
-
         .statement-box {
             background: var(--bg-color);
             border: 1px solid var(--border-color);
@@ -376,7 +370,6 @@ $month_name = date("F Y", strtotime("$selected_year-$selected_month-01"));
             color: var(--text-main);
         }
 
-        /* Smart Progress Bar */
         .progress-container {
             margin-top: 16px;
             background: #E2E8F0;
@@ -459,6 +452,12 @@ $month_name = date("F Y", strtotime("$selected_year-$selected_month-01"));
             line-height: 1.6;
         }
 
+        .table-responsive {
+            width: 100%;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+
         table {
             width: 100%;
             border-collapse: separate;
@@ -503,6 +502,7 @@ $month_name = date("F Y", strtotime("$selected_year-$selected_month-01"));
             border-radius: 6px;
             font-size: 12px;
             font-weight: 700;
+            white-space: nowrap;
         }
 
         .badge.veg {
@@ -561,6 +561,70 @@ $month_name = date("F Y", strtotime("$selected_year-$selected_month-01"));
         .btn-outline:hover {
             background: #F1F5F9;
             border-color: #94A3B8;
+        }
+
+        /* 📱 EXCLUSIVE MOBILE OPTIMIZATIONS (Laptop styling remains untouched) */
+        @media (max-width: 768px) {
+            body {
+                padding: 16px 8px;
+            }
+            .card {
+                padding: 16px;
+                margin-bottom: 16px;
+                border-radius: 12px;
+            }
+            .header-panel {
+                flex-direction: column;
+                align-items: stretch;
+                text-align: center;
+                gap: 16px;
+            }
+            h2 {
+                justify-content: center;
+                font-size: 20px;
+            }
+            .filter-form {
+                flex-direction: column;
+                width: 100%;
+            }
+            .filter-form select, 
+            .filter-form .btn {
+                width: 100%;
+            }
+            .metrics-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 10px;
+                margin-bottom: 16px;
+            }
+            .metric-card {
+                padding: 12px 8px;
+            }
+            .metric-card .value {
+                font-size: 20px;
+            }
+            .billing-summary {
+                grid-template-columns: 1fr;
+                gap: 16px;
+            }
+            .statement-box {
+                padding: 16px;
+            }
+            table {
+                min-width: 600px;
+            }
+            .action-group {
+                flex-direction: column;
+                gap: 12px;
+                margin-top: 16px;
+            }
+            .btn {
+                width: 100%;
+            }
+        }
+        @media (max-width: 480px) {
+            .metrics-grid {
+                grid-template-columns: 1fr;
+            }
         }
     </style>
 </head>
